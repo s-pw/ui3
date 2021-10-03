@@ -1,0 +1,96 @@
+.y-tick {
+    stroke: black;
+    fill: none;
+    stroke-width: 1px;
+}
+
+.axis g.tick line {
+    stroke: #777;
+    fill: none;
+    stroke-width: 1px;
+}
+
+.line-separator,
+.x-axis {
+    stroke: #777;
+    fill: none;
+    stroke-width: 1px;
+}
+
+.drop-line:last-child .line-separator {
+    display: none;
+}
+
+text {
+    stroke: none;
+    fill: white;
+}
+
+.timeline-pf-timestamp text {
+    fill: #fff;
+
+    font-size: .8rem;
+}
+
+.marker {
+    stroke: #777;
+    fill: darkblue;
+    stroke-width: 1px;
+}
+
+.timeline-pf-timestamp rect {
+    fill: #000;
+    opacity: .7;
+}
+
+.timeline-pf-marker {
+    pointer-events: none;
+}
+
+.drop {
+    cursor: pointer;
+}
+
+.tooltip {
+    position: absolute;
+    background: #0;
+    padding: .5rem 1rem;
+    width: 30rem;
+    line-height: 1.4rem;
+}
+
+.tooltip .message {
+    text-shadow: 0px 1px 1px black;
+}
+
+.tooltip.left::before {
+    left: 1.65rem;
+}
+
+.tooltip.right::before {
+    right: 1.65rem;
+}
+
+.tooltip .avatar {
+    width: 5rem;
+    height: 5rem;
+    border-radius: .5rem;
+    margin-right: 1rem;
+    flex: 0 0 5rem;
+}
+
+.tooltip .content {
+    flex: 1 0 0;
+}
+
+.tooltip h3 {
+    font-size: 1rem;
+}
+
+.tooltip p {
+    font-size: .9rem;
+    color: #777;
+}
+.start, .end {
+    font-size: .8rem;
+}

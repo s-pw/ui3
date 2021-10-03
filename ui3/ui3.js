@@ -11,6 +11,122 @@ if (navigator.cookieEnabled)
 {
 	NavRemoveUrlParams("session");
 }
+var loadedTimelineCamera = "";
+
+function loadTimeline(camera) {
+	if (camera == null) {
+		let idx = 0;
+		if(dropdownBoxes.listDefs["currentGroup"].selectedIndex) {
+			idx = dropdownBoxes.listDefs["currentGroup"].selectedIndex;
+		}
+		camera = dropdownBoxes.listDefs["currentGroup"].items[idx].id
+	}
+	if (camera === loadedTimelineCamera) {
+		return;
+	} else {
+		loadedTimelineCamera = camera;
+	}
+	var timelineData = [{
+		"name": "alerts",
+		"data": []
+	}, {
+		"name": "clips",
+		"data": []
+	}]
+
+	ExecJSON({cmd: "alertlist", camera: camera, view: "confirmed"}, response => {
+		timelineData[0].data = response.data.map(d => {
+			return {
+				date: new Date(d.date * 1000),
+				memo: d.memo,
+				path: d.path,
+			}
+		});
+		ExecJSON({cmd: "cliplist", camera: camera, view: "stored"}, response => {
+			timelineData[1].data = response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
+				return {
+					date: new Date(d.date * 1000),
+					memo: d.file,
+					msec: d.msec,
+					path: d.path,
+					type: 'stored',
+					clip: d
+				}
+			})
+			ExecJSON({cmd: "cliplist", camera: camera, view: "new"}, response => {
+				Array.prototype.push.apply(timelineData[1].data, response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
+					return {
+						date: new Date(d.date * 1000),
+						memo: d.file,
+						msec: d.msec,
+						path: d.path,
+						type: 'new',
+						clip: d
+					}
+				}))
+
+				const tooltip = d3
+					.select('body')
+					.append('div')
+					.classed('tooltip', true)
+					.style('opacity', 0)
+					.style('pointer-events', 'auto');
+
+				const chart = eventDrops({ d3,
+					drop: {
+						onMouseOver: (event, alert) => {
+							tooltip
+								.style('opacity', 1)
+								.style('pointer-events', 'auto');
+
+							tooltip
+								.html(
+									`
+										<div class="content">
+											<h3 class="message">${alert.memo}</h3>
+											<img src="/thumbs/${alert.path}"/>
+										</div>
+									`
+								)
+								.style('left', `${event.pageX - 30}px`)
+								.style('top', `${event.pageY - 350}px`);
+						},
+						onMouseOut: () => {
+							tooltip
+								.style('opacity', 0)
+								.style('pointer-events', 'none');
+						},
+					},
+					marker: {
+						onSeek: (date) => {
+							let clip = timelineData[1].data
+								.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
+							if (clip.length > 0) {
+								seekBar.timelineDrag(clip[0].path, date.getTime() - clip[0].date.getTime())
+							}
+
+						},
+						onSeekEnd: (date) => {
+							let clip = timelineData[1].data
+								.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
+							if (clip.length > 0) {
+								let pos = (date.getTime() - clip[0].date.getTime()) / clip[0].msec
+								seekBar.timelineDragEnd(clip[0].clip, pos)
+							}
+						}
+					}
+				});
+				d3
+					.select('#timeline')
+					.data([timelineData])
+					.call(chart);
+			});
+		});
+
+
+
+	});
+}
 ///////////////////////////////////////////////////////////////
 // Feature Detect /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -2669,6 +2785,14 @@ $(function ()
 			$("#layoutleftRecordings").show();
 			//$("#layoutbottom").show();
 			$("#recordingsFilterByHeading").text("Filter by:");
+			if (currentPrimaryTab === "timeline") {
+				playbackControls.Show();
+				$("#timeline").show();
+				loadTimeline(null);
+			} else {
+				$("#timeline").hide();
+				$("#seekBarWrapper").show();
+			}
 		}
 
 		if (!skipLoadingFirstVideoStream && (settings.ui3_openARecording === "First" || settings.ui3_openARecording === "Last"))
@@ -3537,6 +3661,9 @@ function DropdownBoxes()
 		{
 			onItemClick: function (item)
 			{
+				if (currentPrimaryTab === "timeline") {
+					loadTimeline(item.id);
+				}
 				if (item.isGroupOrCycle)
 					videoPlayer.SelectCameraGroup(item.id);
 				else
@@ -5400,7 +5527,11 @@ function PlaybackControls()
 		else
 		{
 			playbackHeader.Show();
-			$("#seekBarWrapper").show();
+			if (currentPrimaryTab !== "timeline") {
+				$("#seekBarWrapper").show();
+			} else {
+				$("#seekBarWrapper").hide();
+			}
 			$("#pcButtonContainer .hideWhenLive").removeClass('temporarilyUnavailable');
 			$("#pcButtonContainer .showWhenLive").addClass('temporarilyUnavailable');
 		}
@@ -5939,7 +6070,7 @@ function SeekBar()
 	var isTouchDragging = false;
 	var didPauseOnDrag = false;
 	var mouseDidActuallyDrag = false; // This is set only for the duration of the mousedown handler which causes playback pausing for dragging.  Helps work around a bug where a seek hint image is loaded simply due to a single click on the seek bar while a clip is playing.
-	var seekHintInfo = { canvasVisible: false, helperVisible: false, visibleMsec: -1, queuedMsec: -1, loadingMsec: -1, lastSnapshotId: "" }
+	var seekHintInfo = { canvasVisible: false, helperVisible: false, visibleMsec: -1, queuedMsec: -1, loadingMsec: -1, lastSnapshotId: "", currentClip: "", queuedClip: ""}
 
 	seekhint_img.load(function ()
 	{
@@ -5954,7 +6085,7 @@ function SeekBar()
 		seekHintInfo.loading = false;
 		seekHintInfo.visibleMsec = seekHintInfo.loadingMsec;
 		if (seekHintInfo.queuedMsec != -1)
-			loadSeekHintImg(seekHintInfo.queuedMsec);
+			loadSeekHintImg(seekHintInfo.queuedMsec, seekHintInfo.queuedClip);
 	});
 	seekhint_img.error(function ()
 	{
@@ -5963,7 +6094,7 @@ function SeekBar()
 		seekHintInfo.loading = false;
 		seekHintInfo.loadingMsec = seekHintInfo.visibleMsec = -1;
 		if (seekHintInfo.queuedMsec != -1)
-			loadSeekHintImg(seekHintInfo.queuedMsec);
+			loadSeekHintImg(seekHintInfo.queuedMsec, seekHintInfo.queuedClip);
 	});
 
 	this.resized = function ()
@@ -6037,10 +6168,17 @@ function SeekBar()
 			// show preview image
 			setSeekHintCanvasVisibility(!isDragging);
 			setSeekHintHelperVisibility(false);
-			if (seekHintInfo.visibleMsec == seekHintInfo.loadingMsec)
-				loadSeekHintImg(seekHintMs);
-			else
+			var url = videoPlayer.GetLastSnapshotUrl()
+			let pathEnd = url.lastIndexOf('/');
+			let clip = url.substr(pathEnd+1, url.indexOf('?')-pathEnd-1);
+
+			if (seekHintInfo.visibleMsec == seekHintInfo.loadingMsec){
+				loadSeekHintImg(seekHintMs, clip);
+			}
+			else {
 				seekHintInfo.queuedMsec = seekHintMs;
+				seekHintInfo.queuedClip = clip;
+			}
 		}
 		else
 		{
@@ -6055,7 +6193,7 @@ function SeekBar()
 		seekhint.css("top", ((barO.top - 10) - seekhint.outerHeight(true) - bodyO.top) + "px");
 		highlight.css("width", hintX + "px");
 	}
-	var loadSeekHintImg = function (msec)
+	var loadSeekHintImg = function (msec, clip)
 	{
 		seekHintInfo.queuedMsec = -1;
 		if (seekHintInfo.visibleMsec != msec)
@@ -6102,8 +6240,50 @@ function SeekBar()
 			}
 			else
 				qualityArgs = "&" + largestDimensionKey + "=160&q=50&decode=-1"
-			seekhint_img.attr('src', videoPlayer.GetLastSnapshotUrl().replace(/time=\d+/, "time=" + msec) + qualityArgs);
+
+			let clipImgUrl = '/file/clips/' + clip + '?time=' + msec + qualityArgs;
+			seekhint_img.attr('src', clipImgUrl);
 		}
+	}
+	this.timelineDrag = function (clip, time)
+	{
+		if (!isDragging) {
+			isDragging = true;
+			didPauseOnDrag = !videoPlayer.Playback_IsPaused();
+			videoPlayer.Playback_Pause();
+
+			videoOverlayHelper.ShowLoadingOverlay();
+
+			SetBarState(1);
+		}
+
+		if (!seekHintVisible) return;
+		if (videoPlayer.Playback_IsPaused())
+		{
+			// show preview image
+			setSeekHintCanvasVisibility(!isDragging);
+			setSeekHintHelperVisibility(false);
+			if (seekHintInfo.visibleMsec == seekHintInfo.loadingMsec) {
+				seekHintInfo.currentClip = clip;
+				loadSeekHintImg(time, clip);
+			} else
+				seekHintInfo.queuedMsec = time;
+				seekHintInfo.queuedClip = clip;
+		}
+		else
+		{
+			setSeekHintCanvasVisibility(false);
+			setSeekHintHelperVisibility(false);
+		}
+	}
+	this.timelineDragEnd = function (clip, percent) {
+		videoPlayer.LoadClip(new ClipData(clip))
+		videoPlayer.SeekToPercent(percent, false);
+
+		setTimeout(function() {
+			videoPlayer.Playback_Play()
+		}, 500);
+		isDragging = false;
 	}
 	this.resetSeekHintImg = function ()
 	{
@@ -6190,6 +6370,7 @@ function SeekBar()
 	}
 	this.mouseUp = function (e)
 	{
+		if (currentPrimaryTab === "timeline") return stopDefault(e);
 		if (!isDragging)
 			return;
 
@@ -6217,6 +6398,7 @@ function SeekBar()
 	}
 	this.mouseMove = function (e, isRealMoveEvent)
 	{
+		if (currentPrimaryTab === "timeline") return stopDefault(e);
 		mouseDidActuallyDrag = isRealMoveEvent;
 		if (isDragging)
 		{
@@ -6231,6 +6413,7 @@ function SeekBar()
 	}
 	this.mouseDown = function (e)
 	{
+		if (currentPrimaryTab === "timeline") return stopDefault(e);
 		mouseDidActuallyDrag = false;
 		if (e.which != 3)
 		{
@@ -6925,7 +7108,7 @@ function ClipLoader(clipsBodySelector)
 	{
 		if (!videoPlayer.Loading().cam)
 			return; // UI hasn't loaded far enough yet.
-		if (currentPrimaryTab !== "clips" || self.suppressClipListLoad)
+		if (currentPrimaryTab === "live" || self.suppressClipListLoad)
 		{
 			QueuedClipListLoad = null;
 			return;
@@ -12454,7 +12637,7 @@ function FetchH264VideoModule()
 			if (isSameClipAsBefore && reqMs === null)
 			{
 				// Another hack to work around API limitations.
-				// This allows us to seek frame-by-frame with millisecond precision 
+				// This allows us to seek frame-by-frame with millisecond precision
 				// instead of precision equalling 1/10000th of the clip's duration.
 				// isSameClipAsBefore helps ensure we have an accurate msec value.
 				var offsetMsec = currentSeekPositionPercent === 1 && !startPaused ? 0 : -1;
