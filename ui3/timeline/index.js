@@ -2268,35 +2268,30 @@ function stubFalse() {
 module.exports = defaultsDeep;
 });
 
-var markerFactory = (function (d3, gridContainer, stampContainer, dateFormat, chart, config) {
-    var dragging = false;
-    var markerState = {
-        date: new Date()
-    };
-
+var markerFactory = (function (d3, gridContainer, stampContainer, dateFormat, chart, config, markerState) {
     var _config$marker = config.marker,
         onSeek = _config$marker.onSeek,
         onSeekEnd = _config$marker.onSeekEnd;
 
 
-    gridContainer.on("mouseover", function () {
+    gridContainer.on('mouseover', function () {
         //marker.style("display", null);
-        timeStamp.style("display", null);
-        timeBox.style("display", null);
-    }).on("mouseout", function () {
+        timeStamp.style('display', null);
+        timeBox.style('display', null);
+    }).on('mouseout', function () {
         //marker.style("display", "none");
-        timeStamp.style("display", "none");
-        timeBox.style("display", "none");
+        timeStamp.style('display', 'none');
+        timeBox.style('display', 'none');
     }).on('mousemove', moveMarker).on('mousedown', startDrag).on('mouseup', stopDrag).on('touchmove', moveMarker).on('touchstart', startDrag).on('touchend', stopDrag);
 
     function startDrag(event) {
-        dragging = true;
+        markerState.isDragging = true;
         moveMarker(event, true);
     }
 
-    function stopDrag() {
-        dragging = false;
-        onSeekEnd(markerState.date);
+    function stopDrag(ev) {
+        markerState.isDragging = false;
+        onSeekEnd(markerState.date, ev);
     }
     //
     // let marker = gridContainer.append('rect')
@@ -2308,12 +2303,13 @@ var markerFactory = (function (d3, gridContainer, stampContainer, dateFormat, ch
 
     var domain = chart._scale.domain();
 
-    var timeBox = stampContainer.append('rect').attr('height', '13').attr('width', '50').style('display', 'none');
+    var pos = chart._scale(markerState.date);
+    var timeBox = stampContainer.append('rect').attr('height', '13').attr('width', '50').attr('transform', 'translate(' + (pos - 25) + ', -30)').style('display', 'none');
 
-    var timeStamp = stampContainer.append('text').text(dateFormat(domain[1])).attr('transform', "translate(" + chart._scale.range()[1] + ")").attr('text-anchor', 'middle');
+    var timeStamp = stampContainer.append('text').text(dateFormat(domain[1])).attr('transform', 'translate(' + pos + ', -19)').attr('text-anchor', 'middle');
 
     function moveMarker(event) {
-        if (dragging) {
+        if (markerState.isDragging) {
             var date = chart._scale.invert(d3.pointers(event)[0][0]);
             onSeek(date);
             updateMarker(date);
@@ -2324,11 +2320,11 @@ var markerFactory = (function (d3, gridContainer, stampContainer, dateFormat, ch
     function updateMarker(date) {
         markerState.date = date;
         var pos = chart._scale(date);
-        timeBox.attr('transform', "translate(" + (pos - 25) + ", -30)");
-        timeStamp.attr('transform', "translate(" + pos + ", -19)").text(dateFormat(date));
+        timeBox.attr('transform', 'translate(' + (pos - 25) + ', -30)');
+        timeStamp.attr('transform', 'translate(' + pos + ', -19)').text(dateFormat(date));
 
         gridContainer.selectAll('.markerGrp').data([markerState]).attr('transform', function (d) {
-            return "translate(" + pos + ")";
+            return 'translate(' + pos + ')';
         });
     }
     markerState.updateMarker = updateMarker;
@@ -2588,8 +2584,10 @@ var dropLine = (function (config, xScale, d3) {
                     var memo = d.memo;
                     if (memo.includes("person")) {
                         return d3.schemeCategory10[2];
-                    } else if (memo.includes("car") || memo.includes("truck")) {
+                    } else if (memo.includes("car")) {
                         return d3.schemeCategory10[0];
+                    } else if (memo.includes("truck")) {
+                        return d3.schemeCategory10[3];
                     }
                     return d3.schemeCategory10[7];
                 }).attr('cx', function (d) {
@@ -2599,7 +2597,7 @@ var dropLine = (function (config, xScale, d3) {
                 d3.select(nodes[idx]).selectAll('.clip').data(function (d) {
                     return d.data;
                 }).enter().append('rect').classed('clip', true).on('click', onClick).on('mouseover', onMouseOver).on('mouseout', onMouseOut).on('touchmove', onMouseOver).on('touchend', onMouseOut).attr('height', 3).attr('fill', function (d) {
-                    if (d.type === "new") {
+                    if (d.type === 'new') {
                         return d3.schemeCategory10[2];
                     } else {
                         return d3.schemeCategory10[8];
@@ -2697,7 +2695,11 @@ var index = (function (_ref) {
         global = _ref$global === undefined ? window : _ref$global,
         customConfiguration = _objectWithoutProperties(_ref, ['d3', 'global']);
 
-    var markerState = {};
+    var markerState = {
+        date: new Date()
+    };
+
+    var range = null;
     var initChart = function initChart(selection) {
         selection.selectAll('svg').remove();
 
@@ -2720,11 +2722,14 @@ var index = (function (_ref) {
             margin = config.margin,
             breakpoints = config.breakpoints;
 
-        // Follow margins conventions (https://bl.ocks.org/mbostock/3019563)
 
+        if (range == null) {
+            range = [rangeStart, rangeEnd];
+        }
+        // Follow margins conventions (https://bl.ocks.org/mbostock/3019563)
         var width = selection.node().clientWidth - margin.left - margin.right;
 
-        var xScale = d3.scaleTime().domain([rangeStart, rangeEnd]).range([0, width - labelWidth]);
+        var xScale = d3.scaleTime().domain(range).range([0, width - labelWidth]);
 
         chart._scale = xScale;
         chart.currentBreakpointLabel = getBreakpointLabel(breakpoints, global.innerWidth);
@@ -2745,7 +2750,7 @@ var index = (function (_ref) {
             zoomContainer.call(zoom(d3, svg, config, xScale, draw));
         }
 
-        markerState = markerFactory(d3, svg, stampContainer, d3.timeFormat('%H:%M:%S'), chart, config);
+        markerFactory(d3, svg, stampContainer, d3.timeFormat('%H:%M:%S'), chart, config, markerState);
         chart.marker = markerState;
 
         var viewport = svg.append('g').classed('viewport', true).attr('transform', 'translate(' + margin.left + ',' + margin.top + ')').call(draw(config, xScale));
@@ -2778,6 +2783,8 @@ var index = (function (_ref) {
             var dropDate = config.drop.date;
 
 
+            range[0] = scale.domain()[0];
+            range[1] = scale.domain()[1];
             var dateBounds = scale.domain().map(function (d) {
                 return new Date(d);
             });

@@ -11,7 +11,8 @@ if (navigator.cookieEnabled)
 {
 	NavRemoveUrlParams("session");
 }
-var loadedTimelineCamera = "";
+var timelineCurrentCam = null;
+var chart = null;
 
 function loadTimeline(camera) {
 	if (camera == null) {
@@ -21,11 +22,6 @@ function loadTimeline(camera) {
 		}
 		camera = dropdownBoxes.listDefs["currentGroup"].items[idx].id
 	}
-	if (camera === loadedTimelineCamera) {
-		return;
-	} else {
-		loadedTimelineCamera = camera;
-	}
 	var timelineData = [{
 		"name": "alerts",
 		"data": []
@@ -33,13 +29,14 @@ function loadTimeline(camera) {
 		"name": "clips",
 		"data": []
 	}]
-
+	clipLoader.LoadClips();
 	ExecJSON({cmd: "alertlist", camera: camera, view: "confirmed"}, response => {
 		timelineData[0].data = response.data.map(d => {
 			return {
 				date: new Date(d.date * 1000),
 				memo: d.memo,
 				path: d.path,
+				clip: d
 			}
 		});
 		ExecJSON({cmd: "cliplist", camera: camera, view: "stored"}, response => {
@@ -55,6 +52,7 @@ function loadTimeline(camera) {
 			})
 			ExecJSON({cmd: "cliplist", camera: camera, view: "new"}, response => {
 				Array.prototype.push.apply(timelineData[1].data, response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
+					timelineCurrentCam = d.camera
 					return {
 						date: new Date(d.date * 1000),
 						memo: d.file,
@@ -72,50 +70,61 @@ function loadTimeline(camera) {
 					.style('opacity', 0)
 					.style('pointer-events', 'auto');
 
-				const chart = eventDrops({ d3,
-					drop: {
-						onMouseOver: (event, alert) => {
-							tooltip
-								.style('opacity', 1)
-								.style('pointer-events', 'auto');
+				if (chart == null) {
+					chart = eventDrops({ d3,
+						drop: {
+							onMouseOver: (event, alert) => {
+								tooltip
+									.style('opacity', 1)
+									.style('pointer-events', 'auto');
 
-							tooltip
-								.html(
-									`
-										<div class="content">
-											<h3 class="message">${alert.memo}</h3>
-											<img src="/thumbs/${alert.path}"/>
-										</div>
-									`
-								)
-								.style('left', `${event.pageX - 30}px`)
-								.style('top', `${event.pageY - 350}px`);
+								tooltip
+									.html(
+										`
+											<div class="content">
+												<h3 class="message">${alert.memo}</h3>
+												<img src="/thumbs/${alert.path}"/>
+											</div>
+										`
+									)
+									.style('left', `${event.pageX - 30}px`)
+									.style('top', `${event.pageY - 350}px`);
+							},
+							onMouseOut: () => {
+								tooltip
+									.style('opacity', 0)
+									.style('pointer-events', 'none');
+							},
+							onClick: (ev,data) => {
+								chart.marker.updateMarker(data.date);
+								seekBar.timelineDragEnd(data.clip, null)
+								timelineCurrentCam = data.clip.camera
+							},
 						},
-						onMouseOut: () => {
-							tooltip
-								.style('opacity', 0)
-								.style('pointer-events', 'none');
-						},
-					},
-					marker: {
-						onSeek: (date) => {
-							let clip = timelineData[1].data
-								.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
-							if (clip.length > 0) {
-								seekBar.timelineDrag(clip[0].path, date.getTime() - clip[0].date.getTime())
-							}
+						marker: {
+							onSeek: (date) => {
+								let clip = timelineData[1].data
+									.filter(d => d.clip.camera === timelineCurrentCam)
+									.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
+								if (clip.length > 0) {
+									seekBar.timelineDrag(clip[0].path, date.getTime() - clip[0].date.getTime())
+								}
 
-						},
-						onSeekEnd: (date) => {
-							let clip = timelineData[1].data
-								.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
-							if (clip.length > 0) {
-								let pos = (date.getTime() - clip[0].date.getTime()) / clip[0].msec
-								seekBar.timelineDragEnd(clip[0].clip, pos)
+							},
+							onSeekEnd: (date, ev) => {
+								if (ev.path[0].className.baseVal !== 'drop') {
+									let clip = timelineData[1].data
+										.filter(d => d.clip.camera === timelineCurrentCam)
+										.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
+									if (clip.length > 0) {
+										let pos = (date.getTime() - clip[0].date.getTime()) / clip[0].msec
+										seekBar.timelineDragEnd(clip[0].clip, pos)
+									}
+								}
 							}
 						}
-					}
-				});
+					});
+				}
 				d3
 					.select('#timeline')
 					.data([timelineData])
@@ -2778,6 +2787,7 @@ $(function ()
 			$("#layoutleftLive").show();
 			$("#layoutleftRecordings").hide();
 			//$("#layoutbottom").hide();
+			$("#timeline").hide();
 		}
 		else
 		{
@@ -6187,6 +6197,7 @@ function SeekBar()
 		}
 		var seekhintLabelHtml = msToTime(seekHintMs, msec < 30000 ? 1 : 0);
 		var clipData = clipLoader.GetClipFromId(videoPlayer.Loading().image.uniqueId);
+		if (clipData == null) return;
 		if (!clipLoader.ClipLikelyHasGaps(clipData))
 			seekhintLabelHtml = seekhintLabelHtml + '<div class="seekTimeReal">' + GetTimeStr(new Date(clipData.clipStartDate.getTime() + seekHintMs)) + '</div>';
 		seekhint_label.html(seekhintLabelHtml);
@@ -6278,7 +6289,9 @@ function SeekBar()
 	}
 	this.timelineDragEnd = function (clip, percent) {
 		videoPlayer.LoadClip(new ClipData(clip))
-		videoPlayer.SeekToPercent(percent, false);
+		if (percent != null) {
+			videoPlayer.SeekToPercent(percent, false);
+		}
 
 		setTimeout(function() {
 			videoPlayer.Playback_Play()
@@ -6355,7 +6368,10 @@ function SeekBar()
 			if (!exportControls.IsDragging())
 			{
 				handle.addClass("focus");
-				seekhint.removeClass('hidden');
+
+				if (currentPrimaryTab !== "timeline") {
+					seekhint.removeClass('hidden');
+				}
 			}
 			seekHintVisible = true;
 		}
@@ -11691,8 +11707,12 @@ function VideoPlayerController()
 		if (currentlyLoadingImage.uniqueId != uniqueId)
 			return;
 
-		if (!currentlyLoadedImage.isLive)
+		if (!currentlyLoadedImage.isLive) {
+			if (currentPrimaryTab === "timeline" && chart != null && chart.marker != null) {
+				chart.marker.updateMarker(lastFrameDate);
+			}
 			seekBar.drawSeekbarAtPercent(playerModule.GetSeekPercent());
+		}
 		videoOverlayHelper.HideLoadingOverlay();
 
 		mediaSessionController.setMediaState();
