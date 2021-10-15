@@ -175,7 +175,9 @@ function BrowserIsFirefox()
 		_browser_is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1 ? 1 : 0;
 	return _browser_is_firefox === 1;
 }
-var h264_playback_supported = false;
+var any_h264_playback_supported = false;
+var streaming_supported = false; // fetch and readablestream
+var h264_js_player_supported = false; // JS H.264 player
 var audio_playback_supported = false;
 var web_workers_supported = false;
 var export_blob_supported = false;
@@ -191,8 +193,8 @@ var web_audio_requires_user_input = false;
 var fullscreen_supported = false;
 var browser_is_ios = false;
 var browser_is_android = false;
-var pnacl_player_supported = false;
-var mse_mp4_h264_supported = false;
+var pnacl_player_supported = false; // pNaCl H.264 player
+var mse_mp4_h264_supported = false; // HTML5 H.264 player
 var mse_mp4_aac_supported = false;
 var vibrate_supported = false;
 var web_audio_autoplay_disabled = false;
@@ -225,45 +227,65 @@ function DoUIFeatureDetection()
 			}
 			readable_stream_supported = typeof ReadableStream === "function";
 			webgl_supported = detectWebGLContext();
+
+			streaming_supported = fetch_supported && readable_stream_supported;
+			h264_js_player_supported = streaming_supported && web_workers_supported && webgl_supported;
+			pnacl_player_supported = streaming_supported && detectIfPnaclSupported();
+			var mse_support = detectMSESupport();
+			mse_mp4_h264_supported = streaming_supported && (mse_support & 1) > 0;
+			mse_mp4_aac_supported = streaming_supported && (mse_support & 2) > 0; // Not yet used
+			any_h264_playback_supported = fetch_supported && readable_stream_supported && (h264_js_player_supported || mse_mp4_h264_supported || pnacl_player_supported);
+
 			detectAudioSupport();
 			vibrate_supported = detectVibrateSupport();
 			fullscreen_supported = ((document.documentElement.requestFullscreen || document.documentElement.msRequestFullscreen || document.documentElement.mozRequestFullScreen || document.documentElement.webkitRequestFullscreen) && (document.exitFullscreen || document.msExitFullscreen || document.mozCancelFullScreen || document.webkitExitFullscreen)) ? true : false;
-			h264_playback_supported = web_workers_supported && fetch_supported && readable_stream_supported && webgl_supported;
-			audio_playback_supported = h264_playback_supported && web_audio_supported && web_audio_buffer_source_supported && web_audio_buffer_copyToChannel_supported;
-			exporting_clips_to_avi_supported = h264_playback_supported && export_blob_supported;
+			audio_playback_supported = any_h264_playback_supported && web_audio_supported && web_audio_buffer_source_supported && web_audio_buffer_copyToChannel_supported;
+			exporting_clips_to_avi_supported = any_h264_playback_supported && export_blob_supported;
 			html5HistorySupported = isHtml5HistorySupported()
 			flac_supported = isFlacSupported();
 			speech_synthesis_supported = isSpeechSupported();
 
-			if (h264_playback_supported)
-			{
-				pnacl_player_supported = detectIfPnaclSupported();
-				var mse_support = detectMSESupport();
-				mse_mp4_h264_supported = (mse_support & 1) > 0;
-				mse_mp4_aac_supported = (mse_support & 2) > 0; // Not yet used
-			}
-
 			$(function ()
 			{
 				var ul_root = $('<ul></ul>');
-				if (!h264_playback_supported)
+				if (!streaming_supported)
 				{
 					var ul = $('<ul></ul>');
-					if (!web_workers_supported)
-						ul.append('<li>Web Workers</li>');
 					if (!fetch_supported)
 						ul.append('<li>Fetch API</li>');
 					if (!readable_stream_supported)
 						ul.append('<li>ReadableStream</li>');
+					ul_root.append($('<li>Data Streaming requires these unsupported features:</li>').append(ul));
+				}
+				if (!h264_js_player_supported)
+				{
+					var ul = $('<ul></ul>');
+					if (!streaming_supported)
+						ul.append('<li>Data Streaming</li>');
+					if (!web_workers_supported)
+						ul.append('<li>Web Workers</li>');
 					if (!webgl_supported)
 						ul.append('<li>WebGL</li>');
-					ul_root.append($('<li>The H.264 video player requires these unsupported features:</li>').append(ul));
+					ul_root.append($('<li>The JavaScript H.264 Player requires these unsupported features:</li>').append(ul));
 				}
+				if (!mse_mp4_h264_supported)
+				{
+					var ul = $('<ul></ul>');
+					if (!streaming_supported)
+						ul.append('<li>Data Streaming</li>');
+					if (!((mse_support & 1) > 0))
+						ul.append('<li>Media Source Extensions, H.264 codec, MP4 format</li>');
+					ul_root.append($('<li>The HTML5 H.264 Player requires these unsupported features:</li>').append(ul));
+				}
+				if (!any_h264_playback_supported)
+					ul_root.append($('<li>No H.264 Player is available.</li>'));
 				if (!audio_playback_supported)
 				{
 					var ul = $('<ul></ul>');
-					if (!h264_playback_supported)
-						ul.append('<li>H.264 Video Player</li>');
+					if (!streaming_supported)
+						ul.append('<li>Data Streaming</li>');
+					if (!any_h264_playback_supported)
+						ul.append('<li>Any H.264 Player</li>');
 					if (!web_audio_supported)
 						ul.append('<li>Web Audio API</li>');
 					if (!web_audio_buffer_source_supported)
@@ -304,12 +326,12 @@ function DoUIFeatureDetection()
 				}
 				var $videoPlayers = $("<ul></ul>");
 				$videoPlayers.append("<li>Jpeg</li>");
-				if (h264_playback_supported)
-					$videoPlayers.append("<li>H.264 via JavaScript</li>");
-				if (pnacl_player_supported)
-					$videoPlayers.append("<li>H.264 via NaCl</li>");
 				if (mse_mp4_h264_supported)
 					$videoPlayers.append("<li>H.264 via HTML5</li>");
+				if (pnacl_player_supported)
+					$videoPlayers.append("<li>H.264 via NaCl</li>");
+				if (h264_js_player_supported)
+					$videoPlayers.append("<li>H.264 via JavaScript</li>");
 				$('#videoPlayersSupported').append($videoPlayers);
 			});
 			return;
@@ -620,11 +642,8 @@ var togglableUIFeatures =
 ///////////////////////////////////////////////////////////////
 
 // CONSIDER: Advanced canvas-based clip list viewer.  It should use the entire video playback area (maybe hide the left bar too), be zoomable, and very responsive.  Navigate by keyboard or click-and-drag with inertia. Clips arranged like a timeline, with thumbnails moving across the screen horizontally (left = older, right = newer) with dotted vertical lines every minute/hour etc.  Each camera its own row.
-// CONSIDER: Android Chrome > Back button can't close the browser if there is no history, so the back button override is disabled on Android.  Also disabled on iOS for similar bugs.
-// CONSIDER: Seeking while paused in Chrome, the canvas sometimes shows the image scaled using nearest-neighbor.
 // CONSIDER: Add "Remote Control" menu based on that which is available in iOS and Android apps.
 // CONSIDER: Sometimes the clip list scrolls down when you're trying to work with it, probably related to automatic refreshing addings items at the top.
-// CONSIDER: Firefox on Android has trouble with switching cameras and seeking.
 // KNOWN: Black frame shown when pausing HTML5 player before first frame is rendered. This is caused by destroying the jmuxer instance before the frame has rendered. Skipping or delaying the destroy causes camera-changing weirdness, so this is the lesser nuisance.
 // CONSIDER: Expandable clip list. ("Show more clips")
 
@@ -660,14 +679,13 @@ function GetH264PlayerOptions()
 		arr.push(H264PlayerOptions.NaCl_HWVA_No);
 		arr.push(H264PlayerOptions.NaCl_HWVA_Yes);
 	}
-	arr.push(H264PlayerOptions.JavaScript);
+	if (h264_js_player_supported)
+		arr.push(H264PlayerOptions.JavaScript);
 	return arr;
 }
 function GetDefaultH264PlayerOption()
 {
 	if (BrowserIsEdgeLegacy())
-		return H264PlayerOptions.JavaScript;
-	else if (BrowserIsFirefox())
 		return H264PlayerOptions.JavaScript;
 	return GetH264PlayerOptions()[0];
 }
@@ -1005,13 +1023,13 @@ var defaultSettings =
 			, category: "Video Player"
 		}
 		, {
-			key: "ui3_h264_choice2"
+			key: "ui3_h264_choice3"
 			, value: GetDefaultH264PlayerOption()
 			, inputType: "select"
 			, options: GetH264PlayerOptions()
 			, label: 'H.264 Player <a href="javascript:UIHelp.LearnMore(\'H.264 Player Options\')">(learn more)</a>'
-			, onChange: OnChange_ui3_h264_choice2
-			, preconditionFunc: Precondition_ui3_h264_choice2
+			, onChange: OnChange_ui3_h264_choice3
+			, preconditionFunc: Precondition_ui3_h264_choice3
 			, category: "Video Player"
 		}
 		, {
@@ -1033,15 +1051,6 @@ var defaultSettings =
 			, options: [HTML5DelayCompensationOptions.None, HTML5DelayCompensationOptions.Weak, HTML5DelayCompensationOptions.Normal, HTML5DelayCompensationOptions.Strong]
 			, label: 'HTML5 Video Delay Compensation <div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'HTML5 Video Delay Compensation\')">(learn more)</a></div>'
 			, preconditionFunc: Precondition_ui3_html5_delay_compensation
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_force_gop_1sec"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<span style="color:#FF0000">Firefox Stutter Fix</span> <div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Firefox Stutter Fix\')">(learn more)</a></div>'
-			, onChange: OnChange_ui3_force_gop_1sec
-			, preconditionFunc: Precondition_ui3_force_gop_1sec
 			, category: "Video Player"
 		}
 		, {
@@ -1216,10 +1225,34 @@ var defaultSettings =
 			, category: "Clips / Alerts"
 		}
 		, {
-			key: "ui3_native_res_previews"
+			key: "ui3_hires_jpeg_disables_preview_animation"
 			, value: "0"
 			, inputType: "checkbox"
-			, label: 'Preview clips at native resolution<div class="settingDesc">(affects mouseover thumbnails)</div>'
+			, label: 'No preview animation for alerts with Hi-res JPEG'
+			, category: "Clips / Alerts"
+		}
+		, {
+			key: "ui3_clip_preview_num_frames"
+			, value: 8
+			, minValue: 2
+			, maxValue: 100
+			, inputType: "number"
+			, label: 'Number of frames in clip preview'
+			, hint: 'Default: 8'
+			, category: "Clips / Alerts"
+		}
+		, {
+			key: "ui3_clip_preview_speed"
+			, value: 5
+			, minValue: 1
+			, maxValue: 60
+			, step: 1
+			, unitLabel: " fps"
+			, inputType: "range"
+			, label: 'Clip preview speed up to'
+			, hint: 'Default: 5 fps'
+			, changeOnStep: false
+			, preconditionFunc: Precondition_ui3_download_snapshot_server
 			, category: "Clips / Alerts"
 		}
 		, {
@@ -2728,6 +2761,19 @@ $(function ()
 					settings.ui3_time24hour = "1";
 				localStorage.ui3_time24hour_migrated = "1";
 			}
+			if (typeof localStorage.ui3_html5_migration === "undefined")
+			{
+				if (typeof localStorage.ui3_h264_choice2 !== "undefined")
+				{
+					// UI3-177 transitions Firefox users from JavaScript to the new FF default of HTML5.
+					// For all other users, this one-time setting migration preserves their previous preference.
+					var isFFwithJS = BrowserIsFirefox() && localStorage.ui3_h264_choice2 === H264PlayerOptions.JavaScript;
+					if (!isFFwithJS)
+						settings.ui3_h264_choice3 = localStorage.ui3_h264_choice2;
+					delete localStorage.ui3_h264_choice2;
+				}
+				localStorage.ui3_html5_migration = "1";
+			}
 		}
 	}
 	catch (e)
@@ -2736,7 +2782,7 @@ $(function ()
 	}
 
 	if (fetch_streams_cant_close_bug && settings.ui3_edge_fetch_bug_h264_enable !== "1")
-		h264_playback_supported = false; // Affects Edge 17.x, 18.x, and possibly newer versions.
+		any_h264_playback_supported = h264_js_player_supported = mse_mp4_h264_supported = pnacl_player_supported = false; // Affects Edge 17.x, 18.x, and possibly newer versions.
 
 	HandlePreLoadUrlParameters();
 
@@ -2748,7 +2794,7 @@ $(function ()
 
 	ptzButtons = new PtzButtons();
 
-	if (!h264_playback_supported)
+	if (!any_h264_playback_supported)
 		loadingHelper.SetLoadedStatus("h264"); // We aren't going to load the player, so clear the loading step.
 
 	$("#layoutleftLiveScrollable").CustomScroll(
@@ -6988,6 +7034,7 @@ function ClipData(clip)
 	clipData.camera = clip.camera;
 	clipData.recId = clip.path.replace(/@/g, "").replace(/\..*/g, ""); // Unique ID, not used for loading imagery
 	clipData.thumbPath = clip.path; // Path used for loading the thumbnail
+	clipData.hasHighResJpeg = !clipData.isClip && !DoesFileSizeStringHaveOnlyDuration(clip.filesize);
 	clipData.res = clip.res;
 	if (clipData.isClip)
 	{
@@ -7673,7 +7720,7 @@ function ClipLoader(clipsBodySelector)
 			console.error("ThumbOnAppear called with undefined ele");
 			return;
 		}
-		var path = currentServer.remoteBaseURL + "thumbs/" + ele.thumbPath + currentServer.GetAPISessionArg("?");
+		var path = GetThumbnailPath(ele.thumbPath, false);
 		if (ele.getAttribute('src') != path)
 			asyncThumbnailDownloader.Enqueue(ele, path);
 	}
@@ -7758,13 +7805,13 @@ function ClipLoader(clipsBodySelector)
 
 					if (getMouseoverClipThumbnails())
 					{
-						var thumbPath = currentServer.remoteBaseURL + "thumbs/" + clipData.thumbPath + currentServer.GetAPISessionArg("?");
+						var thumbPath = GetThumbnailPath(clipData.thumbPath, true);
 						if (thumbEle.getAttribute("src") == thumbPath)
 							thumbPath = thumbEle;
 						var aspectRatio = thumbEle.naturalWidth / thumbEle.naturalHeight;
 						var renderH = 240;
 						var renderW = renderH * aspectRatio;
-						if (settings.ui3_native_res_previews === "1")
+						if (clipData.hasHighResJpeg)
 						{
 							var clipRes = new ClipRes(clipData.res);
 							if (clipRes.valid)
@@ -8780,6 +8827,18 @@ function SetClipListShortcutIconState(iconSelector, selected)
 	else
 		$(iconSelector).removeClass("selected");
 }
+function GetThumbnailPath(thumbPath, nativeRes)
+{
+	var id = thumbPath.replace(/@/g, "").replace(/\..*/g, "");
+	var clipData = clipLoader.GetClipFromId(id);
+	if (!clipData)
+	{
+		toaster.Warning("Unable to find clip with ID " + id);
+		return "";
+	}
+	nativeRes = nativeRes && clipData.hasHighResJpeg;
+	return currentServer.remoteBaseURL + (nativeRes ? "alerts" : "thumbs") + "/" + thumbPath + "?" + (nativeRes ? "fulljpeg" : "") + currentServer.GetAPISessionArg("&");
+}
 ///////////////////////////////////////////////////////////////
 // Clip Res Parser ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -8809,17 +8868,19 @@ function ClipThumbnailVideoPreview_BruteForce()
 	var self = this;
 	var lastThumbLoadTime = -60000;
 	var thumbVideoTimeout = null;
-	var clipPreviewNumFrames = 8;
 	var clipPreviewNumLoopsAllowed = 3;
 	var clipThumbPlaybackActive = false;
 	var clipPreviewStartTimeout = null;
 	var queuedPreview = null;
 	var lastItemId = null;
+	var averageFrameLoadTime = null;
 
 	this.Start = function ($clip, clipData, camName, frameNum, loopNum)
 	{
 		var duration = clipData.isClip ? clipData.msec : clipData.roughLengthMs;
 		if (settings.ui3_clipPreviewEnabled != "1" || duration < 500)
+			return;
+		if (clipData.hasHighResJpeg && settings.ui3_hires_jpeg_disables_preview_animation === "1")
 			return;
 		if (lastItemId != clipData.recId)
 		{
@@ -8834,20 +8895,25 @@ function ClipThumbnailVideoPreview_BruteForce()
 				clipPreviewStartTimeout = null;
 				if (queuedPreview)
 				{
+					averageFrameLoadTime = new RollingAverage(self.GetClipPreviewNumFrames());
 					self.Start(queuedPreview.clip, queuedPreview.clipData, queuedPreview.camName);
 				}
 			}, 500);
 		}
+
 		queuedPreview = null;
 		if (!frameNum)
 			frameNum = 0;
 		if (!loopNum)
 			loopNum = 0;
+		if (!averageFrameLoadTime)
+			averageFrameLoadTime = new RollingAverage(self.GetClipPreviewNumFrames());
 
 		// Throttle image loads to one per 200ms.
 		var perfNow = performance.now();
 		var timeWaited = perfNow - lastThumbLoadTime;
-		var timeToWait = Clamp(200 - timeWaited, 0, 1000);
+		var waitTime = PreviewSpeedToDelayMs(parseInt(settings.ui3_clip_preview_speed));
+		var timeToWait = Clamp(waitTime - timeWaited, 0, 1000);
 		if (timeToWait > 0)
 		{
 			clearTimeout(thumbVideoTimeout);
@@ -8867,7 +8933,7 @@ function ClipThumbnailVideoPreview_BruteForce()
 			aspectRatio = 16 / 9;
 		var expectedHeight = 240;
 		var expectedWidth = expectedHeight * aspectRatio;
-		if (settings.ui3_native_res_previews === "1")
+		if (clipData.hasHighResJpeg)
 		{
 			var clipRes = new ClipRes(clipData.res);
 			if (clipRes.valid)
@@ -8877,6 +8943,7 @@ function ClipThumbnailVideoPreview_BruteForce()
 			}
 		}
 		clipThumbPlaybackActive = true;
+		var clipPreviewNumFrames = self.GetClipPreviewNumFrames();
 		var timeValue = ((frameNum % clipPreviewNumFrames) / clipPreviewNumFrames) * duration;
 		var thumbPath = currentServer.remoteBaseURL + "file/clips/" + clipData.thumbPath + '?time=' + timeValue + "&cache=1&h=" + expectedHeight + currentServer.GetAPISessionArg("&");
 		var thumbLabel = camName + " " + GetTimeStr(new Date(clipData.displayDate.getTime() + timeValue));
@@ -8890,7 +8957,9 @@ function ClipThumbnailVideoPreview_BruteForce()
 					frameNum = 0;
 					loopNum++;
 				}
-				if (loopNum >= clipPreviewNumLoopsAllowed && performance.now() - lastThumbLoadTime > 40)
+				var timeToLoadThisFrame = performance.now() - lastThumbLoadTime;
+				averageFrameLoadTime.Add(timeToLoadThisFrame);
+				if (loopNum >= clipPreviewNumLoopsAllowed && averageFrameLoadTime.Get() > 10) // Only allow looping past the limit if images are loading fast
 					return;
 
 				self.Start($clip, clipData, camName, frameNum, loopNum);
@@ -8902,6 +8971,15 @@ function ClipThumbnailVideoPreview_BruteForce()
 		ClearTimeouts();
 		clipThumbPlaybackActive = false;
 		bigThumbHelper.Hide();
+		averageFrameLoadTime = new RollingAverage(self.GetClipPreviewNumFrames());
+	}
+	this.GetClipPreviewNumFrames = function ()
+	{
+		var clipPreviewNumFrames = parseInt(settings.ui3_clip_preview_num_frames);
+		if (!clipPreviewNumFrames)
+			clipPreviewNumFrames = 8;
+		clipPreviewNumFrames = Clamp(clipPreviewNumFrames, 2, 100);
+		return clipPreviewNumFrames;
 	}
 	var ClearTimeouts = function ()
 	{
@@ -10601,6 +10679,8 @@ function CameraListLoader()
 		var cam = self.GetCameraWithId(groupId);
 		if (cam)
 		{
+			if (!self.CameraIsGroup(cam))
+				return;
 			var g = dynamicGroupLayout[groupId];
 			if (!g)
 				g = dynamicGroupLayout[groupId] = {};
@@ -10717,10 +10797,26 @@ function CameraListLoader()
 		}
 		return null;
 	}
+	this.isDynamicLayoutEligible = function (groupId)
+	{
+		var cam = self.GetCameraWithId(groupId);
+		if (cam && !self.IsFakeGroup(groupId))
+		{
+			if (self.CameraIsGroup(cam))
+				return !!cam.dynamic;
+			//else if (self.CameraIsCycle(cam))
+			//{
+			//	cam = self.GetCameraWithId(groupId.substr(1));
+			//	if (cam && !self.IsFakeGroup(groupId))
+			//		return !!cam.dynamic;
+			//}
+		}
+		return false;
+	}
 	this.isDynamicLayoutEnabled = function (groupId, ignoreViewportSize)
 	{
 		var cam = self.GetCameraWithId(groupId);
-		return cam && self.CameraIsGroup(cam) && settings.ui3_dynamicGroupLayout === "1" && cam.dynamic && (ignoreViewportSize || imageRenderer.ViewportCanSupportDynamicGroupLayout());
+		return cam && self.isDynamicLayoutEligible(groupId) && settings.ui3_dynamicGroupLayout === "1" && (ignoreViewportSize || imageRenderer.ViewportCanSupportDynamicGroupLayout());
 	}
 	this.HideWebcastingWarning = function ()
 	{
@@ -10977,7 +11073,7 @@ function VideoPlayerController()
 	{
 		if (!moduleHolder["jpeg"])
 			moduleHolder["jpeg"] = new JpegVideoModule();
-		if (h264_playback_supported)
+		if (any_h264_playback_supported)
 		{
 			if (!moduleHolder["h264"])
 				moduleHolder["h264"] = new FetchH264VideoModule();
@@ -12446,15 +12542,40 @@ function FetchH264VideoModule()
 		isInitialized = true;
 		// Do one-time initialization here
 		//console.log("Initializing h264_player");
-		if (mse_mp4_h264_supported && settings.ui3_h264_choice2 === H264PlayerOptions.HTML5)
+		if (mse_mp4_h264_supported && settings.ui3_h264_choice3 === H264PlayerOptions.HTML5)
 			h264_player = new HTML5_MSE_Player($camimg_wrapper, FrameRendered, PlaybackReachedNaturalEnd, playerErrorCb);
 		else if (pnacl_player_supported &&
-			(settings.ui3_h264_choice2 === H264PlayerOptions.NaCl_HWVA_Auto
-				|| settings.ui3_h264_choice2 === H264PlayerOptions.NaCl_HWVA_No
-				|| settings.ui3_h264_choice2 === H264PlayerOptions.NaCl_HWVA_Yes))
+			(settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_Auto
+				|| settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_No
+				|| settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_Yes))
 			h264_player = new Pnacl_Player($camimg_wrapper, FrameRendered, PlaybackReachedNaturalEnd);
-		else
+		else if (h264_js_player_supported && settings.ui3_h264_choice3 === H264PlayerOptions.JavaScript)
 			h264_player = new OpenH264_Player(FrameRendered, PlaybackReachedNaturalEnd);
+		else
+		{
+			if (mse_mp4_h264_supported)
+			{
+				settings.ui3_h264_choice3 = H264PlayerOptions.HTML5;
+				isInitialized = false;
+				Initialize();
+			}
+			else if (pnacl_player_supported)
+			{
+				settings.ui3_h264_choice3 = H264PlayerOptions.NaCl_HWVA_Auto;
+				isInitialized = false;
+				Initialize();
+			}
+			else if (h264_js_player_supported)
+			{
+				settings.ui3_h264_choice3 = H264PlayerOptions.JavaScript;
+				isInitialized = false;
+				Initialize();
+			}
+			else
+			{
+				toaster.Error("No H.264 player is supported.");
+			}
+		}
 	}
 	var Activate = function ()
 	{
@@ -13632,12 +13753,13 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 	}
 	var checkErrorBeforeLoad = function (isCrash)
 	{
+		var selectionToast = null;
 		var $err = $('<div>Native H.264 player ' + (isCrash ? "crashed" : "error") + '!<br><br>' + player.lastError + '</div>');
 		if (!isLoaded)
 		{
 			loadingHelper.SetErrorStatus("h264");
 			$err.append($disablePnaclButton);
-			var $explanation = $('<div>You can load UI3 by changing to a different H.264 player:</div>');
+			var $explanation = mse_mp4_h264_supported || h264_js_player_supported ? $('<div>You can load UI3 by changing to a different player:</div>') : $('<div>You can load UI3 by changing to a JPEG streaming method:</div>');
 			$explanation.css('margin-top', '12px');
 			$err.append($explanation);
 			if (mse_mp4_h264_supported)
@@ -13648,23 +13770,37 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 				$disablePnaclButton2.css('display', 'block');
 				$disablePnaclButton2.on('click', function ()
 				{
-					settings.ui3_h264_choice2 = H264PlayerOptions.HTML5;
+					settings.ui3_h264_choice3 = H264PlayerOptions.HTML5;
 					ReloadInterface();
 				});
 				$err.append($disablePnaclButton2);
 			}
-			var $disablePnaclButton = $('<input type="button" value="JavaScript (slow)" />');
+			if (h264_js_player_supported)
+			{
+				var $disablePnaclButton = $('<input type="button" value="JavaScript (slow)" />');
+				$disablePnaclButton.css('margin-top', '10px');
+				$disablePnaclButton.css('padding', '6px');
+				$disablePnaclButton.css('display', 'block');
+				$disablePnaclButton.on('click', function ()
+				{
+					settings.ui3_h264_choice3 = H264PlayerOptions.JavaScript;
+					ReloadInterface();
+				});
+				$err.append($disablePnaclButton);
+			}
+			var $disablePnaclButton = $('<input type="button" value="JPEG mode (no H.264)" />');
 			$disablePnaclButton.css('margin-top', '10px');
 			$disablePnaclButton.css('padding', '6px');
 			$disablePnaclButton.css('display', 'block');
 			$disablePnaclButton.on('click', function ()
 			{
-				settings.ui3_h264_choice2 = H264PlayerOptions.JavaScript;
-				ReloadInterface();
+				any_h264_playback_supported = pnacl_player_supported = false;
+				genericQualityHelper.QualityChoiceChanged('');
+				selectionToast.remove();
 			});
 			$err.append($disablePnaclButton);
 		}
-		toaster.Error($err, isCrash || !isLoaded ? 9999999 : 60000, true);
+		selectionToast = toaster.Error($err, isCrash || !isLoaded ? 9999999 : 60000, true);
 	}
 	var handleMessage = function (message_event)
 	{
@@ -13751,9 +13887,9 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 		listenerDiv.addEventListener('crash', handleCrash, true);
 
 		var hwva = "0";
-		if (settings.ui3_h264_choice2 === H264PlayerOptions.NaCl_HWVA_Auto)
+		if (settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_Auto)
 			hwva = "1";
-		else if (settings.ui3_h264_choice2 === H264PlayerOptions.NaCl_HWVA_Yes)
+		else if (settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_Yes)
 			hwva = "2";
 		var $player = $('<embed id="pnacl_player_module" name="pnacl_player_module" width="100%" height="100%" path="pnacl" src="ui3/pnacl/pnacl_player.nmf' + currentServer.GetLocalSessionArg("?") + '" type="application/x-pnacl" hwaccel="' + hwva + '" />');
 		$parent.append($player);
@@ -15974,7 +16110,7 @@ function ClipOverlayCfg()
 // Group Streaming Configuration //////////////////////////////
 ///////////////////////////////////////////////////////////////
 /**
-	Provides storage of group configuration on a per-group basis.
+	Provides storage of group configuration on a per-group basis. Also supports group cycles.
 	For boolean setting overrides, value 0 indicates "UNSET". 1 indicates "OFF". 2 indicates "ON".
  */
 function GroupCfg()
@@ -16019,7 +16155,7 @@ function GroupCfg()
 		var camData = cameraListLoader.GetCameraWithId(camId);
 		if (camData)
 		{
-			if (cameraListLoader.CameraIsGroup(camData))
+			if (cameraListLoader.CameraIsGroupOrCycle(camData))
 			{
 				if (keyMap[key])
 					key = keyMap[key];
@@ -16595,14 +16731,7 @@ function StreamingProfile()
 			if (self.fps >= 0)
 				sb.Append("&fps=").Append(self.fps);
 
-			if (Precondition_ui3_force_gop_1sec() && settings.ui3_force_gop_1sec === "1")
-			{
-				var forced_GOP = videoPlayer.Loading().cam.FPS || 10;
-				if (self.fps > 0 && self.fps < forced_GOP)
-					forced_GOP = self.fps;
-				sb.Append("&gop=").Append(Clamp(forced_GOP, 3, 60));
-			}
-			else if (self.gop >= 1)
+			if (self.gop >= 1)
 				sb.Append("&gop=").Append(self.gop);
 
 			if (self.zfl > 0)
@@ -16649,7 +16778,7 @@ function StreamingProfile()
 	}
 	this.IsCompatible = function ()
 	{
-		return self.vcodec === "jpeg" || (h264_playback_supported && self.vcodec === "h264");
+		return self.vcodec === "jpeg" || (any_h264_playback_supported && self.vcodec === "h264");
 	}
 }
 function SetIntendedSize(loading, w, h)
@@ -16695,7 +16824,7 @@ function GenericQualityHelper()
 		// Try to find the best profile
 		// First, one with a max bit rate nearest 1000
 		var best = null;
-		if (h264_playback_supported)
+		if (any_h264_playback_supported)
 		{
 			// Prefer 1080p VBR
 			if (!best) best = self.FindBestProfile("h264", function (p)
@@ -17202,11 +17331,16 @@ function CanvasContextMenu()
 	var onShowLiveContextMenu = function (menu)
 	{
 		var imgLoaded = videoPlayer.Loaded().image;
-		var imgIsFakeGroup = cameraListLoader.IsFakeGroup(imgLoaded.id);
-		if (imgLoaded.isGroup && !imgIsFakeGroup)
+		if (imgLoaded.isGroup || cameraListLoader.isDynamicLayoutEligible(imgLoaded.id))
 			$("#submenu_trigger_groupLayout").closest('.b-m-item,.b-m-ifocus').show();
 		else
 			$("#submenu_trigger_groupLayout").closest('.b-m-item,.b-m-ifocus').hide();
+
+		ThreeStateMenuItem.SetVisible("showCameraNames", imgLoaded.isGroup);
+		ThreeStateMenuItem.SetVisible("showCameraBorders", imgLoaded.isGroup);
+		ThreeStateMenuItem.SetVisible("showHiddenCameras", imgLoaded.isGroup);
+		ThreeStateMenuItem.SetVisible("hideDisabledCameras", imgLoaded.isGroup);
+		ThreeStateMenuItem.SetVisible("hideInactiveCamerasWithoutVideo", imgLoaded.isGroup);
 
 		if (cameraListLoader.isDynamicLayoutEnabled(imgLoaded.id))
 		{
@@ -17628,6 +17762,13 @@ var ThreeStateMenuItem = new (function ()
 			getIconWrapper(spanId).removeClass("iconGray");
 		else
 			getIconWrapper(spanId).addClass("iconGray");
+	}
+	this.SetVisible = function (id, visible)
+	{
+		if (visible)
+			$("#submenu_trigger_" + id).closest('.b-m-item,.b-m-ifocus').show();
+		else
+			$("#submenu_trigger_" + id).closest('.b-m-item,.b-m-ifocus').hide();
 	}
 })();
 ///////////////////////////////////////////////////////////////
@@ -18958,10 +19099,15 @@ function ClipProperties()
 		try
 		{
 			var $thumb = $('<img class="clipPropertiesThumb" src="" alt="clip thumbnail"></img>');
-			var thumbPath = currentServer.remoteBaseURL + "thumbs/" + clipData.thumbPath + currentServer.GetAPISessionArg("?");
+			var thumbPath = GetThumbnailPath(clipData.thumbPath, true);
 			$thumb.attr('src', thumbPath);
 			$thumb.css("border-color", "#" + clipData.colorHex);
 			$camprop.append($thumb);
+			$thumb.on('load', function ()
+			{
+				if (dialog)
+					dialog.contentChanged(true, true);
+			});
 
 			$camprop.append(GetInfo("Date", GetDateStr(clipData.displayDate)));
 			if (clipData.isClip)
@@ -19655,7 +19801,7 @@ function ExportListDialog()
 	{
 		var linked = item.status === "done";
 		var loadingImg = "ui3/LoadingImage.png" + currentServer.GetLocalSessionArg("?");
-		var thumbUrl = currentServer.remoteBaseURL + 'thumbs/' + item.path + currentServer.GetAPISessionArg("?");
+		var thumbUrl = GetThumbnailPath(item.path, false);
 		var thumbStyle = item.status === "done" ? '' : ' style="opacity: 0.5;"';
 		var thumb = '<div class="camlist_thumb">'
 			+ '<div class="camlist_thumb_aligner"></div>'
@@ -21619,7 +21765,7 @@ function PictureInPictureController()
 	var pipIsSupported = false;
 	try
 	{
-		pipIsSupported = document.pictureInPictureEnabled && settings.ui3_h264_choice2 === H264PlayerOptions.HTML5;
+		pipIsSupported = document.pictureInPictureEnabled && settings.ui3_h264_choice3 === H264PlayerOptions.HTML5;
 	}
 	catch (ex)
 	{
@@ -25570,7 +25716,7 @@ function UISettingsPanel()
 }
 function GenerateLocalSnapshotsComment()
 {
-	if (!h264_playback_supported || settings.ui3_h264_choice2 === H264PlayerOptions.HTML5)
+	if (!any_h264_playback_supported || settings.ui3_h264_choice3 === H264PlayerOptions.HTML5)
 		return "";
 	return "<b>-- Your current H.264 player is not capable of local snapshots. --</b>";
 }
@@ -25584,7 +25730,7 @@ function GenerateEventTriggeredIconsComment()
 }
 function GenerateH264RequirementString()
 {
-	return '-- Requires an H.264 stream. --' + (h264_playback_supported ? '' : '<br/><span class="settingsCommentError">-- H.264 streams are not supported by this browser --</span>');
+	return '-- Requires an H.264 stream. --' + (any_h264_playback_supported ? '' : '<br/><span class="settingsCommentError">-- H.264 streams are not supported by this browser --</span>');
 }
 function OnChange_ui3_audio_codec()
 {
@@ -25675,7 +25821,7 @@ function OnChange_ui3_topbar_warnings_counter()
 {
 	statusLoader.LoadStatus();
 }
-function OnChange_ui3_h264_choice2()
+function OnChange_ui3_h264_choice3()
 {
 	if (ui3_contextMenus_trigger_toast)
 		ui3_contextMenus_trigger_toast.remove();
@@ -25686,9 +25832,9 @@ function OnChange_ui3_h264_choice2()
 		});
 	uiSettingsPanel.Refresh();
 }
-function Precondition_ui3_h264_choice2()
+function Precondition_ui3_h264_choice3()
 {
-	return (pnacl_player_supported || mse_mp4_h264_supported);
+	return any_h264_playback_supported;
 }
 function Precondition_ui3_edge_fetch_bug_h264_enable()
 {
@@ -25711,15 +25857,11 @@ function OnChange_ui3_streamingProfileBitRateMax()
 }
 function Precondition_ui3_streamingProfileBitRateMax()
 {
-	return h264_playback_supported;
+	return any_h264_playback_supported;
 }
 function Precondition_ui3_html5_delay_compensation()
 {
-	return (mse_mp4_h264_supported && settings.ui3_h264_choice2 === H264PlayerOptions.HTML5);
-}
-function Precondition_ui3_force_gop_1sec()
-{
-	return (mse_mp4_h264_supported && settings.ui3_h264_choice2 === H264PlayerOptions.HTML5 && BrowserIsFirefox());
+	return (mse_mp4_h264_supported && settings.ui3_h264_choice3 === H264PlayerOptions.HTML5);
 }
 function Precondition_ui3_download_snapshot_server()
 {
@@ -25728,10 +25870,6 @@ function Precondition_ui3_download_snapshot_server()
 function Precondition_ui3_download_snapshot_local()
 {
 	return settings.ui3_download_snapshot_method.startsWith("Local ");
-}
-function OnChange_ui3_force_gop_1sec()
-{
-	videoPlayer.SelectedQualityChanged();
 }
 function OnChange_ui3_icons_extraVisibility()
 {
@@ -26154,9 +26292,6 @@ function UIHelpTool()
 			case "HTML5 Video Delay Compensation":
 				UI3_HTML5_Delay_Compensation_Help();
 				break;
-			case "Firefox Stutter Fix":
-				UI3_Firefox_Stuffer_fix_Help();
-				break;
 			case "Edge Fetch Bug":
 				UI3_Edge_Fetch_Bug_Help();
 				break;
@@ -26240,7 +26375,7 @@ function UIHelpTool()
 	{
 		$('<div class="UIHelp">'
 			+ 'UI3 has several H.264 player options. Not all options are available in all browsers.'
-			+ '<br><br><b>JavaScript</b> - ' + (h264_playback_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
+			+ '<br><br><b>JavaScript</b> - ' + (h264_js_player_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
 			+ '&nbsp; &nbsp; The JavaScript player is the most robust and compatible player option, but also the slowest.'
 			+ '<br><br><b>HTML5</b> - ' + (mse_mp4_h264_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
 			+ '&nbsp; &nbsp; The HTML5 player works by converting each frame into a fragmented MP4 which is played using Media Source Extensions.  This is usually the fastest option, but has compatibility problems with some browsers.'
@@ -26260,13 +26395,6 @@ function UIHelpTool()
 		$('<div class="UIHelp">'
 			+ 'HTML5 video was not designed for low-latency playback, so brief stream interruptions build up to a noticeable delay. UI3 is built with an experimental delay compensator which can speed up or slow down the video player to keep video delay at a consistent level. This delay compensator is configurable via the HTML5 Video Delay Compensation option.'
 			+ '</div>').modalDialog({ title: 'HTML5 Video Delay Compensation', closeOnOverlayClick: true });
-	}
-	var UI3_Firefox_Stuffer_fix_Help = function ()
-	{
-		$('<div class="UIHelp">'
-			+ "Firefox's HTML5 video player has trouble with low-latency streams. Basically, it requires frequent keyframes or else performance degrades rapidly.  The Firefox Stutter Fix option forces your keyframe interval to be equal to the camera\'s frame rate while you are using the HTML5 player for H.264 video.  This reduces video quality somewhat, but ensures relatively good decoding performance.<br><br>"
-			+ "If this bothers you, it is recommended to use a different H.264 player option."
-			+ '</div>').modalDialog({ title: 'Firefox Stutter Fix', closeOnOverlayClick: true });
 	}
 	var UI3_Edge_Fetch_Bug_Help = function ()
 	{
@@ -27090,6 +27218,11 @@ function GetClipLengthFromFileSize(fileSize)
 		fileSize = fileSize.substring(0, indexLeftParen - 1);
 	return fileSize;
 }
+function DoesFileSizeStringHaveOnlyDuration(fileSize)
+{
+	var indexLeftParen = fileSize.indexOf("(");
+	return indexLeftParen < 0;
+}
 function GetClipLengthMs(str)
 {
 	var time = GetTimeFromBIStr(str);
@@ -27851,4 +27984,15 @@ function debounce(fn, delay)
 function getRandomInt(maxPlusOne)
 {
 	return Clamp(Math.floor(Math.random() * maxPlusOne), 0, maxPlusOne - 1);
+}
+function PreviewSpeedToDelayMs(speed)
+{
+	if (!speed)
+		speed = 5;
+	speed = Clamp(speed, 1, 60);
+	var scaled = 1000 / speed;
+	return scaled;
+	// exponential scaling
+	//var sqrt = Math.sqrt(scaled);
+	//return 1000 - Clamp(sqrt * 984, 0, 1000);
 }
