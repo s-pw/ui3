@@ -16,11 +16,7 @@ var chart = null;
 
 function loadTimeline(camera) {
 	if (camera == null) {
-		let idx = 0;
-		if(dropdownBoxes.listDefs["currentGroup"].selectedIndex) {
-			idx = dropdownBoxes.listDefs["currentGroup"].selectedIndex;
-		}
-		camera = dropdownBoxes.listDefs["currentGroup"].items[idx].id
+		camera = timelineCurrentCam
 	}
 	var timelineData = [{
 		"name": "alerts",
@@ -656,25 +652,25 @@ var togglableUIFeatures =
 		, ["#globalScheduleBox", "globalSchedule", "Schedule Controls", function (enabled) { dropdownBoxes.setEnabled("schedule", enabled); }, null, null]
 		// The PTZ Controls hot area specifically does not include the main button pad because a context menu on that pad would break touchscreen usability
 		, [".ptzpreset", "ptzControls", "PTZ Controls", function (enabled) { ptzButtons.setEnabled(enabled); }
-			, [{
-				getName: function (ele) { return "Goto Preset " + ele.getAttribute("presetnum") + htmlEncode(ptzButtons.GetPresetDescription(ele.getAttribute("presetnum"), true)); }
-				, action: function (ele) { ptzButtons.PTZ_goto_preset(ele.presetnum); }
-				, shouldDisable: function () { return !ptzButtons.isEnabledNow(); }
-			}
-				, {
+		, [{
+			getName: function (ele) { return "Goto Preset " + ele.getAttribute("presetnum") + htmlEncode(ptzButtons.GetPresetDescription(ele.getAttribute("presetnum"), true)); }
+			, action: function (ele) { ptzButtons.PTZ_goto_preset(ele.presetnum); }
+			, shouldDisable: function () { return !ptzButtons.isEnabledNow(); }
+		}
+			, {
 				getName: function (ele) { return "Set Preset " + ele.getAttribute("presetnum"); }
 				, action: function (ele) { ptzButtons.PresetSet(ele.getAttribute("presetnum")); }
 				, shouldDisable: function () { return !ptzButtons.isEnabledNow(); }
 			}]
-			, function () { return !videoPlayer.Loading().image.ptz; }
-		]
+		, function () { return !videoPlayer.Loading().image.ptz; }
+	]
 		, ["#playbackHeader", "clipNameLabel", "Clip Name", function (enabled)
-		{
-			if (enabled)
-				$("#clipNameHeading").show();
-			else
-				$("#clipNameHeading").hide();
-		}, null, null, ["Show", "Hide", "Toggle"]]
+	{
+		if (enabled)
+			$("#clipNameHeading").show();
+		else
+			$("#clipNameHeading").hide();
+	}, null, null, ["Show", "Hide", "Toggle"]]
 	];
 
 ///////////////////////////////////////////////////////////////
@@ -783,1812 +779,1812 @@ var defaultSettings =
 			, value: "live"
 		}
 		, {
-			key: "ui3_defaultCameraGroupId"
-			, value: "index"
-		}
-		, {
-			key: "ui3_audioVolume"
-			, value: 0
-		}
-		, {
-			key: "ui3_audioMute"
-			, value: "1"
-		}
-		, {
-			key: "ui3_streamingQuality"
-			, value: "1080p VBR^"
-		}
-		, {
-			key: "ui3_playback_reverse"
-			, value: "0"
-		}
-		, {
-			key: "ui3_playback_speed"
-			, value: "1"
-		}
-		, {
-			key: "ui3_playback_autoplay"
-			, value: "0"
-		}
-		, {
-			key: "ui3_playback_loop"
-			, value: "0"
-		}
-		, {
-			key: "ui3_current_dbView"
-			, value: "all"
-		}
-		, {
-			key: "ui3_cliplist_larger_thumbnails"
-			, value: "0"
-		}
-		, {
-			key: "ui3_cliplist_mouseover_thumbnails"
-			, value: "1"
-		}
-		, {
-			key: "ui3_clip_export_format"
-			, value: 1
-		}
-		, {
-			key: "ui3_clip_export_profile"
-			, value: 0
-		}
-		, {
-			key: "ui3_clip_export_substream"
-			, value: "0"
-		}
-		, {
-			key: "ui3_clip_export_withAudio"
-			, value: "1"
-		}
-		, {
-			key: "ui3_clip_export_reencode"
-			, value: "0"
-		}
-		, {
-			key: "ui3_clip_export_overlay"
-			, value: "0"
-		}
-		, {
-			key: "ui3_clip_export_timelapse"
-			, value: "0"
-		}
-		, {
-			key: "ui3_clip_export_timelapseMultiplier"
-			, value: 10
-		}
-		, {
-			key: "ui3_clip_export_timelapseFps"
-			, value: 30
-		}
-		, {
-			key: "bi_rememberMe"
-			, value: "0"
-		}
-		, {
-			key: "bi_username"
-			, value: ""
-		}
-		, {
-			key: "bi_password"
-			, value: ""
-		}
-		, {
-			key: "bi_lastunload"
-			, value: 0
-		}
-		, {
-			key: "ui3_webcasting_disabled_dontShowAgain"
-			, value: "0"
-		}
-		, {
-			key: "ui3_feature_enabled_volumeBar" // ui3_feature_enabled keys are tied to unique IDs in togglableUIFeatures
-			, value: "1"
-		}
-		, {
-			key: "ui3_feature_enabled_profileStatus"
-			, value: "1"
-		}
-		, {
-			key: "ui3_feature_enabled_stopLight"
-			, value: "1"
-		}
-		, {
-			key: "ui3_feature_enabled_globalSchedule"
-			, value: "1"
-		}
-		, {
-			key: "ui3_feature_enabled_ptzControls"
-			, value: "1"
-		}
-		, {
-			key: "ui3_feature_enabled_clipNameLabel"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_ptz"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_profileStatus"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_schedule"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_currentGroup"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_streamingQuality"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_serverStatus"
-			, value: "1"
-		}
-		, {
-			key: "ui3_collapsible_filterRecordings"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_info_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_gs_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_mt_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_mro_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_mgmt_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_General_Settings_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Video_Player_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_UI_Status_Sounds_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Top_Bar_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Clips___Alerts_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Clip___Alert_Icons_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Event_Triggered_Icons_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Event_Triggered_Sounds_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Hotkeys_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Camera_Labels_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Digital_Zoom_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_cps_uiSettings_category_Extra_visible"
-			, value: "1"
-		}
-		, {
-			key: "ui3_disableIEWarning"
-			, value: "0"
-		}
-		, {
-			key: "ui3_maxGOP"
-			, value: 1000
-		}
-		, {
-			key: "ui3_clipOverlayCfg"
-			, value: ""
-		}
-		, {
-			key: "ui3_groupCfg"
-			, value: ""
-		}
-		, {
-			key: "ui3_prioritizeTriggered"
-			, value: "0"
-		}
-		, {
-			key: "ui3_streamingProfileArray"
-			, value: "[]"
-			, category: "Streaming Profiles" // This category isn't shown in UI Settings, but has special-case logic in ui3-local-overrides.js export.
-		}
-		, {
-			key: "ui3_timeout"
-			, value: 10
-			, inputType: "number"
-			, minValue: 0
-			, maxValue: 525600
-			, label: 'Idle Timeout<div class="settingDesc">The UI will close itself after this many minutes of inactivity. (0 to disable)</div>'
-			, category: "General Settings"
-		}
-		, {
-			key: "ui3_preferred_ui_scale"
-			, value: "Auto"
-			, inputType: "select"
-			, options: ["Auto", "Large", "Medium", "Small", "Smaller"]
-			, label: "Preferred UI Scale"
-			, onChange: OnChange_ui3_preferred_ui_scale
-			, category: "General Settings"
-		}
-		, {
-			key: "ui3_sideBarPosition"
-			, value: "Left"
-			, inputType: "select"
-			, options: ["Left", "Right"]
-			, label: "Side Bar Position"
-			, onChange: OnChange_ui3_sideBarPosition
-			, category: "General Settings"
-		}
-		, {
-			key: "ui3_time24hour"
-			, value: localeUses24HourTime() ? "1" : "0"
-			, inputType: "checkbox"
-			, label: '24-Hour Time'
-			, onChange: OnChange_ui3_time24hour
-			, category: "General Settings"
-		}
-		, {
-			key: "ui3_doubleClick_behavior"
-			, value: "Recordings"
-			, inputType: "select"
-			, options: ["None", "Live View", "Recordings", "Both"]
-			, label: 'Double-Click to Fullscreen<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Double-Click to Fullscreen\')">(learn more)</a></div>'
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_edge_fetch_bug_h264_enable"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<span style="color:#FF0000;font-weight:bold">Enable H.264 Player</span><div class="settingDesc">This browser has known compatiblity issues. <a href="javascript:UIHelp.LearnMore(\'Edge Fetch Bug\')">(learn more)</a></div>'
-			, onChange: OnChange_ui3_edge_fetch_bug_h264_enable
-			, preconditionFunc: Precondition_ui3_edge_fetch_bug_h264_enable
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_h264_choice3"
-			, value: GetDefaultH264PlayerOption()
-			, inputType: "select"
-			, options: GetH264PlayerOptions()
-			, label: 'H.264 Player <a href="javascript:UIHelp.LearnMore(\'H.264 Player Options\')">(learn more)</a>'
-			, onChange: OnChange_ui3_h264_choice3
-			, preconditionFunc: Precondition_ui3_h264_choice3
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_streamingProfileBitRateMax"
-			, value: -1
-			, inputType: "number"
-			, minValue: -1
-			, maxValue: 8192
-			, label: 'Maximum H.264 Kbps<div class="settingDesc">(10-8192, disabled if less than 10)</div>'
-			, hint: "Useful for slow connections. Audio streams are not affected by this setting."
-			, onChange: OnChange_ui3_streamingProfileBitRateMax
-			, preconditionFunc: Precondition_ui3_streamingProfileBitRateMax
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_html5_delay_compensation"
-			, value: HTML5DelayCompensationOptions.Normal
-			, inputType: "select"
-			, options: [HTML5DelayCompensationOptions.None, HTML5DelayCompensationOptions.Weak, HTML5DelayCompensationOptions.Normal, HTML5DelayCompensationOptions.Strong]
-			, label: 'HTML5 Video Delay Compensation <div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'HTML5 Video Delay Compensation\')">(learn more)</a></div>'
-			, preconditionFunc: Precondition_ui3_html5_delay_compensation
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_jpegSupersampling"
-			, value: 1
-			, minValue: 0.01
-			, maxValue: 2
-			, step: 0.01
-			, inputType: "range"
-			, label: 'Jpeg Video Supersampling Factor'
-			, changeOnStep: true
-			, hint: "(Default: 1)\n\nJpeg video frames loaded by UI3 will have their dimensions scaled by this amount.\n\nLow values save bandwidth, while high values improve quality slightly."
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_web_audio_autoplay_warning"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Warn if audio playback requires user input'
-			, hint: 'When set to "Yes", a full-page overlay will appear if camera audio playback requires user input. Otherwise, the audio icon will simply turn red.'
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_pause_when_hidden"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Pause when tab is inactive'
-			, hint: 'When set to "Yes", video playback will pause when the tab is inactive.\nSelect "No" to allow audio and event-triggered sounds to play while the browser tab is inactive.\nRecommended: "Yes"'
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_download_snapshot_method"
-			, value: "Server"
-			, inputType: "select"
-			, options: ["Server", "Local (JPEG)", "Local (PNG)"]
-			, label: 'Source of snapshot downloads<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Local Snapshots\')">(learn more)</a></div>'
-			, onChange: OnChange_ui3_download_snapshot_method
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_comment_download_snapshot_local"
-			, value: ""
-			, inputType: "comment"
-			, comment: GenerateLocalSnapshotsComment
-			, preconditionFunc: Precondition_ui3_download_snapshot_local
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_download_snapshot_server_quality"
-			, value: 85
-			, minValue: 1
-			, maxValue: 100
-			, step: 1
-			, unitLabel: "%"
-			, inputType: "range"
-			, label: 'Server-sourced Snapshot Jpeg Quality'
-			, hint: 'Default: 85%'
-			, changeOnStep: false
-			, preconditionFunc: Precondition_ui3_download_snapshot_server
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_prioritizeTriggered_triggerMode"
-			, value: "Trigger"
-			, inputType: "select"
-			, options: ["Trigger", "Motion"]
-			, label: '<svg class="icon clipicon prioritizeTriggeredButton on"><use xlink:href="#svg_x5F_Alert"></use></svg> Auto-Maximize upon...<div class="settingDesc" style="margin-left: 35px;"><i>(experimental feature)</i></div>'
-			, hint: '"Motion" uses Blue Iris\'s built-in motion detection.\n\n"Trigger" works with any method of trigger (such as ONVIF or audio), but may not respond as quickly.'
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_show_picture_in_picture_button"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Picture-in-Picture Button'
-			, hint: 'Requires a supported browser and H.264 player: HTML5.'
-			, onChange: OnChange_ui3_show_picture_in_picture_button
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_audio_codec"
-			, value: flac_supported ? "FLAC" : GetAudioCodecOptions()[0]
-			, inputType: "select"
-			, options: GetAudioCodecOptions()
-			, label: 'Audio Codec' + (!flac_supported ? '<div class="settingDesc">(FLAC unavailable in this browser)</div>' : '')
-			, onChange: OnChange_ui3_audio_codec
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_audio_buffer_ms"
-			, value: 700
-			, minValue: 0
-			, maxValue: 5000
-			, inputType: "number"
-			, label: 'Audio Buffer Size Milliseconds<div class="settingDesc">(max audio delay)</div>'
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_dynamicGroupLayout"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Dynamic Group Layout<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Dynamic Group Layout\')">(learn more)</a></div>'
-			, onChange: OnChange_ui3_dynamicGroupLayout
-			, category: "Video Player"
-		}
-		, {
-			key: "ui3_uiStatusSounds"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'UI Status Sounds<div class="settingDesc">Sound is emitted when certain important events occur. <a href="javascript:UIHelp.LearnMore(\'UI Status Sounds\')">(learn more)</a></div>'
-			, onChange: OnChange_ui3_uiStatusSounds
-			, category: "UI Status Sounds"
-		}
-		, {
-			key: "ui3_uiStatusSpeech"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'UI Status Speech<div class="settingDesc">Requires compatible browser. <a href="javascript:TestSpeech()">Click to test.</a></div>'
-			, onChange: OnChange_ui3_uiStatusSpeech
-			, preconditionFunc: Precondition_ui3_speechAvailable
-			, category: "UI Status Sounds"
-		}
-		, {
-			key: "ui3_speechVoice"
-			, value: ""
-			, inputType: "select"
-			, options: []
-			, getOptions: GetSpeechVoiceOptions
-			, label: 'Speech Voice'
-			, onChange: OnChange_ui3_speechVoice
-			, preconditionFunc: Precondition_ui3_speechAvailable
-			, category: "UI Status Sounds"
-		}
-		, {
-			key: "ui3_topbar_allclips_shortcut_show"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: "Shortcut to All Clips"
-			, onChange: OnChange_ui3_topbar_allclips_shortcut_show
-			, category: "Top Bar"
-		}
-		, {
-			key: "ui3_topbar_alerts_shortcut_show"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: "Shortcut to Alerts"
-			, onChange: OnChange_ui3_topbar_alerts_shortcut_show
-			, category: "Top Bar"
-		}
-		, {
-			key: "ui3_topbar_alerts_shortcut_counter"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Show New Alerts Counter<div class="settingDesc">(requires Shortcut to Alerts)</div>'
-			, onChange: OnChange_ui3_topbar_alerts_shortcut_counter
-			, category: "Top Bar"
-		}
-		, {
-			key: "ui3_topbar_warnings_counter"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Show New Warnings Counter<div class="settingDesc">(appears on Main Menu / System Log)</div>'
-			, onChange: OnChange_ui3_topbar_warnings_counter
-			, category: "Top Bar"
-		}
-		, {
-			key: "ui3_clipPreviewEnabled"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: "Clip Preview Animations"
-			, hint: "When enabled, mousing over the alert/clip list shows a rapid animated preview.  Video streaming performance may suffer while the animation is active."
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_hires_jpeg_popups"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Use Hi-res JPEG for alert mouseover'
-			, hint: "This only affects alerts that have Hi-res JPEG images saved by Blue Iris"
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_hires_jpeg_disables_preview_animation"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'No preview animation for alerts with Hi-res JPEG'
-			, hint: 'The preview animation would prevent you from reading annotations from deepstack AI.'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_clip_preview_num_frames"
-			, value: 8
-			, minValue: 2
-			, maxValue: 100
-			, inputType: "number"
-			, label: 'Number of frames in clip preview'
-			, hint: 'Default: 8'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_clip_preview_speed"
-			, value: 5
-			, minValue: 1
-			, maxValue: 60
-			, step: 1
-			, unitLabel: " fps"
-			, inputType: "range"
-			, label: 'Clip preview speed up to'
-			, hint: 'Default: 5 fps'
-			, changeOnStep: false
-			, preconditionFunc: Precondition_ui3_download_snapshot_server
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_pc_next_prev_buttons"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Next/Previous'
-			, onChange: OnChange_ui3_pc_next_prev_buttons
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_pc_seek_buttons"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Skip Buttons'
-			, onChange: OnChange_ui3_pc_seek_buttons
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_pc_seek_1frame_buttons"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Skip 1 Frame Buttons'
-			, onChange: OnChange_ui3_pc_seek_1frame_buttons
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_pc_delete_button"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Delete Button'
-			, onChange: OnChange_ui3_pc_delete_button
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_extra_playback_controls_padding"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Extra Padding'
-			, onChange: OnChange_ui3_extra_playback_controls_padding
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_extra_playback_controls_timestamp"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Real Timestamp<br>When Streaming H.264'
-			, hint: 'Adds a real-world timestamp to the playback controls, available only when streaming .bvr recordings with an H.264 streaming method.'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_extra_playback_controls_alwaysVisible"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Playback Controls: Always Visible'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_clipDownloadOriginalName"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Preserve Original File Names<div class="settingDesc">when downloading clips</div>'
-			, hint: 'Does not affect clip "exports"'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_askForDelete"
-			, value: "All"
-			, inputType: "select"
-			, options: ["All", // All is the original default, will ask to confirm any delete
-				"Multiple", // Multiple will only ask to confirm when multiple items are to be deleted
-				"None"] // Will not ask to confirm deletions
-			, label: 'Confirm deletes for'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_allow_clip_deletion"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Allow Clip Deletion'
-			, onChange: OnChange_ui3_allow_clip_deletion
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_download_exports_automatically"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Download Exports Automatically'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_seek_with_substream"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Seek with Sub Stream<div class="settingDesc">for better performance</div>'
-			, hint: 'Only affects recordings that include main and sub streams'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_openARecording"
-			, value: "No"
-			, inputType: "select"
-			, options: ["No", "First", "Last"]
-			, label: 'Automatically Open a Recording<div class="settingDesc">when loading Alerts or Clips tab</div>'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_clip_navigation_direction"
-			, value: "Oldest First"
-			, inputType: "select"
-			, options: ["Newest First", // "next clip" is older, further down the clip list.
-				"Oldest First"] // "next clip" is newer, further up the clip list.
-			, label: 'Clip Review Order/Direction'
-			, hint: 'Choose "Oldest First" if you prefer to review clips from oldest to newest.  Affects autoplay direction and Next/Previous button logic.  May affect other aspects of clip navigation in the future.'
-			, category: "Clips / Alerts"
-		}
-		, {
-			key: "ui3_clipicon_trigger_motion"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_run"></use></svg> for motion-triggered alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_trigger_audio"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_volumeUp"></use></svg> for audio-triggered alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_trigger_external"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon"><use xlink:href="#svg_x5F_Alert1"></use></svg> for externally-triggered alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_trigger_group"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_quilt"></use></svg> for group-triggered alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_trigger_sentry"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#sentry_logo"></use></svg> for AI-verified alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_trigger_sentry_occupied"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#sentry_human"></use></svg> for AI-verified alerts that continue a previous alert'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_clip_audio"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_volumeUp"></use></svg> for clips with audio'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_clip_backingup"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_cloudUploading"></use></svg> for clips that are being backed up'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_clip_backup"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_cloudUploaded"></use></svg> for clips that have been backed up'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_protect"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_lock"></use></svg> for protected items'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_clipicon_is_new"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon"><use xlink:href="#svg_x5F_Stoplight"></use></svg> for new alerts'
-			, category: "Clip / Alert Icons"
-		}
-		, {
-			key: "ui3_comment_eventTriggeredIcons_Heading"
-			, value: ""
-			, inputType: "comment"
-			, comment: GenerateEventTriggeredIconsComment
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_icon_motion"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip" style="fill: rgba(120,205,255,1)"><use xlink:href="#svg_mio_run"></use></svg> on Motion Detected'
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_icon_trigger"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon" style="fill: rgba(255,64,64,1)"><use xlink:href="#svg_x5F_Alert1"></use></svg> on Camera Triggered'
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_icon_recording"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_Stoplight"></use></svg> on Camera Recording'
-			, hint: "Does not appear when viewing a group of cameras"
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_comment_camera_overlay_icons_Heading"
-			, value: ""
-			, inputType: "comment"
-			, comment: "The following icons are shown <b>per-camera</b> and do not require an H.264 stream."
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_camera_overlay_icon_motion_trigger"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_mio_run"></use></svg> on Motion Trigger'
-			, onChange: OnChange_ui3_camera_overlay_icons
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_camera_overlay_icon_audio_trigger"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_mio_volumeUp"></use></svg> on Audio Trigger'
-			, onChange: OnChange_ui3_camera_overlay_icons
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_camera_overlay_icon_generic_trigger"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_Alert1"></use></svg> on Other Trigger'
-			, onChange: OnChange_ui3_camera_overlay_icons
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_camera_overlay_icon_webcasting_disabled"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_HoldProfile"></use></svg> if Webcasting Disabled'
-			, onChange: OnChange_ui3_camera_overlay_icons
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_icons_extraVisibility"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Extra Visibility For Icons'
-			, onChange: OnChange_ui3_icons_extraVisibility
-			, category: "Event-Triggered Icons"
-		}
-		, {
-			key: "ui3_comment_eventTriggeredSounds_Heading"
-			, value: ""
-			, inputType: "comment"
-			, comment: GenerateEventTriggeredSoundsComment
-			, category: "Event-Triggered Sounds"
-		}
-		, {
-			key: "ui3_sound_motion"
-			, value: "None"
-			, inputType: "select"
-			, options: []
-			, getOptions: getBISoundOptions
-			, alwaysRefreshOptions: true
-			, label: 'Motion Detected'
-			, onChange: function () { biSoundPlayer.PlayEvent("motion"); }
-			, category: "Event-Triggered Sounds"
-		}
-		, {
-			key: "ui3_sound_trigger"
-			, value: "None"
-			, inputType: "select"
-			, options: []
-			, getOptions: getBISoundOptions
-			, alwaysRefreshOptions: true
-			, label: 'Camera Triggered'
-			, onChange: function () { biSoundPlayer.PlayEvent("trigger"); }
-			, category: "Event-Triggered Sounds"
-		}
-		, {
-			key: "ui3_eventSoundVolume"
-			, value: 100
-			, minValue: 0
-			, maxValue: 100
-			, step: 1
-			, unitLabel: "%"
-			, inputType: "range"
-			, label: 'Sound Effect Volume'
-			, onChange: function () { biSoundPlayer.AdjustVolume(); }
-			, changeOnStep: true
-			, category: "Event-Triggered Sounds"
-		}
-		, {
-			key: "ui3_hotkey_maximizeVideoArea"
-			, value: "1|0|0|192" // 192: tilde (~`)
-			, hotkey: true
-			, label: "Maximize Video Area"
-			, hint: "Shows or hides the left and top control bars. This can be triggered on page load via the url parameter \"maximize=1\"."
-			, actionDown: BI_Hotkey_MaximizeVideoArea
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_togglefullscreen"
-			, value: "0|0|0|192" // 192: tilde (~`)
-			, hotkey: true
-			, label: "Full Screen Mode"
-			, hint: "Toggles Full Screen Mode and shows or hides the left and top control bars according to UI defaults."
-			, actionDown: BI_Hotkey_FullScreen
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_tab_live"
-			, value: "0|0|0|112" // 112: F1
-			, hotkey: true
-			, label: "Load Tab: Live View"
-			, hint: "Opens the Live View tab"
-			, actionDown: BI_Hotkey_Load_Tab_Live
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_tab_clips"
-			, value: "0|0|0|113" // 113: F2
-			, hotkey: true
-			, label: "Load Tab: Clips"
-			, hint: "Opens the Clips tab"
-			, actionDown: BI_Hotkey_Load_Tab_Clips
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_cameraLabels"
-			, value: "1|0|0|76" // 76: L
-			, hotkey: true
-			, label: "Toggle Camera Labels"
-			, actionDown: BI_Hotkey_Toggle_Camera_Labels
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_downloadframe"
-			, value: "1|0|0|83" // 83: S
-			, hotkey: true
-			, label: "Download Frame"
-			, actionDown: BI_Hotkey_DownloadFrame
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_toggleMute"
-			, value: "1|0|0|77" // 77: M
-			, hotkey: true
-			, label: "Toggle Camera Mute"
-			, actionDown: BI_Hotkey_ToggleMute
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_nextCamera"
-			, value: "0|0|0|190" // 190: . (period)
-			, hotkey: true
-			, label: "Next Camera"
-			, hint: "Manually cycles to the next camera when a camera is maximized."
-			, actionDown: BI_Hotkey_NextCamera
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_prevCamera"
-			, value: "0|0|0|188" // 188: , (comma)
-			, hotkey: true
-			, label: "Previous Camera"
-			, hint: "Manually cycles to the previous camera when a camera is maximized."
-			, actionDown: BI_Hotkey_PreviousCamera
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_nextGroup"
-			, value: "1|0|1|190" // 190: CTRL + SHIFT + . (period)
-			, hotkey: true
-			, label: "Next Group"
-			, hint: "Manually loads your next group or cycle stream."
-			, actionDown: BI_Hotkey_NextGroup
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_prevGroup"
-			, value: "1|0|1|188" // 188: CTRL + SHIFT + , (comma)
-			, hotkey: true
-			, label: "Previous Group"
-			, hint: "Manually loads your previous group or cycle stream."
-			, actionDown: BI_Hotkey_PreviousGroup
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_playpause"
-			, value: "0|0|0|32" // 32: space
-			, hotkey: true
-			, label: "Play/Pause"
-			, hint: "Plays or pauses the current recording."
-			, actionDown: BI_Hotkey_PlayPause
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_delete"
-			, value: "0|0|0|46" // 46: delete
-			, hotkey: true
-			, label: "Delete"
-			, hint: "Deletes the current recording."
-			, actionDown: BI_Hotkey_Delete
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_toggleReverse"
-			, value: "0|0|0|8" // 8: backspace
-			, hotkey: true
-			, label: "Reverse Playback"
-			, hint: "Toggles between Forward and Reverse playback."
-			, actionDown: BI_Hotkey_ToggleReverse
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_newerClip"
-			, value: "0|0|0|38" // 38: up arrow
-			, hotkey: true
-			, label: "Navigate Up One Clip"
-			, hint: "Load the next clip, higher up in the list."
-			, actionDown: BI_Hotkey_NextClip
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_olderClip"
-			, value: "0|0|0|40" // 40: down arrow
-			, hotkey: true
-			, label: "Navigate Down One Clip"
-			, hint: "Load the previous clip, lower down in the list."
-			, actionDown: BI_Hotkey_PreviousClip
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_skipAhead"
-			, value: "0|0|0|39" // 39: right arrow
-			, hotkey: true
-			, label: "Skip Ahead"
-			, hint: "Skips ahead in the current recording by a configurable number of seconds."
-			, actionDown: BI_Hotkey_SkipAhead
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_skipBack"
-			, value: "0|0|0|37" // 37: left arrow
-			, hotkey: true
-			, label: "Skip Back"
-			, hint: "Skips back in the current recording by a configurable number of seconds."
-			, actionDown: BI_Hotkey_SkipBack
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_skipAmount"
-			, value: 10
-			, inputType: "number"
-			, minValue: 0
-			, maxValue: 9999
-			, label: "Skip Time (seconds)"
-			, hint: "[0.01-9999] (default: 10) \r\nNumber of seconds to skip forward and back when using hotkeys to skip."
-			, onChange: OnChange_ui3_skipAmount
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_skipAhead1Frame"
-			, value: "0|0|0|190" // 190: . (period)
-			, hotkey: true
-			, label: "Skip Ahead 1 Frame"
-			, hint: "Skips ahead in the current recording by approximately one frame."
-			, actionDown: BI_Hotkey_SkipAhead1Frame
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_skipBack1Frame"
-			, value: "0|0|0|188" // 188: , (comma)
-			, hotkey: true
-			, label: "Skip Back 1 Frame"
-			, hint: "Skips back in the current recording by approximately one frame."
-			, actionDown: BI_Hotkey_SkipBack1Frame
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_playback_faster"
-			, value: "0|0|0|221" // 221: ]
-			, hotkey: true
-			, label: "Playback Faster"
-			, hint: "Increases clip playback speed"
-			, actionDown: BI_Hotkey_PlaybackFaster
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_playback_slower"
-			, value: "0|0|0|219" // 219: [
-			, hotkey: true
-			, label: "Playback Slower"
-			, hint: "Decreases clip playback speed"
-			, actionDown: BI_Hotkey_PlaybackSlower
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_close_clip"
-			, value: "0|0|0|27" // 27: escape
-			, hotkey: true
-			, label: "Close Clip"
-			, hint: "Closes the current clip."
-			, actionDown: BI_Hotkey_CloseClip
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_close_camera"
-			, value: "0|0|0|27" // 27: escape
-			, hotkey: true
-			, label: "Close Camera"
-			, hint: "Closes the current live camera and returns to the group view."
-			, actionDown: BI_Hotkey_CloseCamera
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalZoomIn"
-			, value: "0|0|1|187" // 187: =
-			, hotkey: true
-			, label: "Digital Zoom In"
-			, hint: "This has the same function as rolling a mouse wheel one notch."
-			, actionDown: BI_Hotkey_DigitalZoomIn
-			, allowRepeatKey: true
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalZoomOut"
-			, value: "0|0|1|189" // : 189: -
-			, hotkey: true
-			, label: "Digital Zoom Out"
-			, hint: "This has the same function as rolling a mouse wheel one notch."
-			, actionDown: BI_Hotkey_DigitalZoomOut
-			, allowRepeatKey: true
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalPanUp"
-			, value: "0|0|1|38" // 38: up arrow
-			, hotkey: true
-			, label: "Digital Pan Up"
-			, hint: "If zoomed in with digital zoom, pans up."
-			, actionDown: BI_Hotkey_DigitalPanUp
-			, actionUp: BI_Hotkey_DigitalPanUp_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalPanDown"
-			, value: "0|0|1|40" // 40: down arrow
-			, hotkey: true
-			, label: "Digital Pan Down"
-			, hint: "If zoomed in with digital zoom, pans down."
-			, actionDown: BI_Hotkey_DigitalPanDown
-			, actionUp: BI_Hotkey_DigitalPanDown_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalPanLeft"
-			, value: "0|0|1|37" // 37: left arrow
-			, hotkey: true
-			, label: "Digital Pan Left"
-			, hint: "If zoomed in with digital zoom, pans left."
-			, actionDown: BI_Hotkey_DigitalPanLeft
-			, actionUp: BI_Hotkey_DigitalPanLeft_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_digitalPanRight"
-			, value: "0|0|1|39" // 39: right arrow
-			, hotkey: true
-			, label: "Digital Pan Right"
-			, hint: "If zoomed in with digital zoom, pans right."
-			, actionDown: BI_Hotkey_DigitalPanRight
-			, actionUp: BI_Hotkey_DigitalPanRight_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzUp"
-			, value: "0|0|0|38" // 38: up arrow
-			, hotkey: true
-			, label: "PTZ Up"
-			, hint: "If the current live camera is PTZ, moves the camera up."
-			, actionDown: BI_Hotkey_PtzUp
-			, actionUp: BI_Hotkey_PtzUp_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzDown"
-			, value: "0|0|0|40" // 40: down arrow
-			, hotkey: true
-			, label: "PTZ Down"
-			, hint: "If the current live camera is PTZ, moves the camera down."
-			, actionDown: BI_Hotkey_PtzDown
-			, actionUp: BI_Hotkey_PtzDown_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzLeft"
-			, value: "0|0|0|37" // 37: left arrow
-			, hotkey: true
-			, label: "PTZ Left"
-			, hint: "If the current live camera is PTZ, moves the camera left."
-			, actionDown: BI_Hotkey_PtzLeft
-			, actionUp: BI_Hotkey_PtzLeft_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzRight"
-			, value: "0|0|0|39" // 39: right arrow
-			, hotkey: true
-			, label: "PTZ Right"
-			, hint: "If the current live camera is PTZ, moves the camera right."
-			, actionDown: BI_Hotkey_PtzRight
-			, actionUp: BI_Hotkey_PtzRight_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzIn"
-			, value: "0|0|0|187" // 187: =
-			, hotkey: true
-			, label: "PTZ Zoom In"
-			, hint: "If the current live camera is PTZ, zooms the camera in."
-			, actionDown: BI_Hotkey_PtzIn
-			, actionUp: BI_Hotkey_PtzIn_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzOut"
-			, value: "0|0|0|189" // 189: -
-			, hotkey: true
-			, label: "PTZ Zoom Out"
-			, hint: "If the current live camera is PTZ, zooms the camera out."
-			, actionDown: BI_Hotkey_PtzOut
-			, actionUp: BI_Hotkey_PtzOut_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzFocusFar"
-			, value: "0|0|0|221" // 221: ]
-			, hotkey: true
-			, label: "PTZ Focus Far"
-			, hint: "If the current live camera is PTZ, focuses the camera further away."
-			, actionDown: BI_Hotkey_PtzFocusFar
-			, actionUp: BI_Hotkey_PtzFocusFar_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzFocusNear"
-			, value: "0|0|0|219" // 219: [
-			, hotkey: true
-			, label: "PTZ Focus Near"
-			, hint: "If the current live camera is PTZ, focuses the camera closer."
-			, actionDown: BI_Hotkey_PtzFocusNear
-			, actionUp: BI_Hotkey_PtzFocusNear_Up
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset1"
-			, value: "0|0|0|49" // 49: 1
-			, hotkey: true
-			, label: "Load Preset 1"
-			, hint: "If the current live camera is PTZ, loads preset 1."
-			, actionDown: function () { BI_Hotkey_PtzPreset(1); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset2"
-			, value: "0|0|0|50" // 50: 2
-			, hotkey: true
-			, label: "Load Preset 2"
-			, hint: "If the current live camera is PTZ, loads preset 2."
-			, actionDown: function () { BI_Hotkey_PtzPreset(2); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset3"
-			, value: "0|0|0|51" // 51: 3
-			, hotkey: true
-			, label: "Load Preset 3"
-			, hint: "If the current live camera is PTZ, loads preset 3."
-			, actionDown: function () { BI_Hotkey_PtzPreset(3); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset4"
-			, value: "0|0|0|52" // 52: 4
-			, hotkey: true
-			, label: "Load Preset 4"
-			, hint: "If the current live camera is PTZ, loads preset 4."
-			, actionDown: function () { BI_Hotkey_PtzPreset(4); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset5"
-			, value: "0|0|0|53" // 53: 5
-			, hotkey: true
-			, label: "Load Preset 5"
-			, hint: "If the current live camera is PTZ, loads preset 5."
-			, actionDown: function () { BI_Hotkey_PtzPreset(5); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset6"
-			, value: "0|0|0|54" // 54: 6
-			, hotkey: true
-			, label: "Load Preset 6"
-			, hint: "If the current live camera is PTZ, loads preset 6."
-			, actionDown: function () { BI_Hotkey_PtzPreset(6); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset7"
-			, value: "0|0|0|55" // 55: 7
-			, hotkey: true
-			, label: "Load Preset 7"
-			, hint: "If the current live camera is PTZ, loads preset 7."
-			, actionDown: function () { BI_Hotkey_PtzPreset(7); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset8"
-			, value: "0|0|0|56" // 56: 8
-			, hotkey: true
-			, label: "Load Preset 8"
-			, hint: "If the current live camera is PTZ, loads preset 8."
-			, actionDown: function () { BI_Hotkey_PtzPreset(8); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset9"
-			, value: "0|0|0|57" // 57: 9
-			, hotkey: true
-			, label: "Load Preset 9"
-			, hint: "If the current live camera is PTZ, loads preset 9."
-			, actionDown: function () { BI_Hotkey_PtzPreset(9); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset10"
-			, value: "0|0|0|48" // 48: 0
-			, hotkey: true
-			, label: "Load Preset 10"
-			, hint: "If the current live camera is PTZ, loads preset 10."
-			, actionDown: function () { BI_Hotkey_PtzPreset(10); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset11"
-			, value: "1|0|0|49" // 49: 1
-			, hotkey: true
-			, label: "Load Preset 11"
-			, hint: "If the current live camera is PTZ, loads preset 11."
-			, actionDown: function () { BI_Hotkey_PtzPreset(11); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset12"
-			, value: "1|0|0|50" // 50: 2
-			, hotkey: true
-			, label: "Load Preset 12"
-			, hint: "If the current live camera is PTZ, loads preset 12."
-			, actionDown: function () { BI_Hotkey_PtzPreset(12); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset13"
-			, value: "1|0|0|51" // 51: 3
-			, hotkey: true
-			, label: "Load Preset 13"
-			, hint: "If the current live camera is PTZ, loads preset 13."
-			, actionDown: function () { BI_Hotkey_PtzPreset(13); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset14"
-			, value: "1|0|0|52" // 52: 4
-			, hotkey: true
-			, label: "Load Preset 14"
-			, hint: "If the current live camera is PTZ, loads preset 14."
-			, actionDown: function () { BI_Hotkey_PtzPreset(14); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset15"
-			, value: "1|0|0|53" // 53: 5
-			, hotkey: true
-			, label: "Load Preset 15"
-			, hint: "If the current live camera is PTZ, loads preset 15."
-			, actionDown: function () { BI_Hotkey_PtzPreset(15); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset16"
-			, value: "1|0|0|54" // 54: 6
-			, hotkey: true
-			, label: "Load Preset 16"
-			, hint: "If the current live camera is PTZ, loads preset 16."
-			, actionDown: function () { BI_Hotkey_PtzPreset(16); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset17"
-			, value: "1|0|0|55" // 55: 7
-			, hotkey: true
-			, label: "Load Preset 17"
-			, hint: "If the current live camera is PTZ, loads preset 17."
-			, actionDown: function () { BI_Hotkey_PtzPreset(17); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset18"
-			, value: "1|0|0|56" // 56: 8
-			, hotkey: true
-			, label: "Load Preset 18"
-			, hint: "If the current live camera is PTZ, loads preset 18."
-			, actionDown: function () { BI_Hotkey_PtzPreset(18); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset19"
-			, value: "1|0|0|57" // 57: 9
-			, hotkey: true
-			, label: "Load Preset 19"
-			, hint: "If the current live camera is PTZ, loads preset 19."
-			, actionDown: function () { BI_Hotkey_PtzPreset(19); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset20"
-			, value: "1|0|0|48" // 48: 0
-			, hotkey: true
-			, label: "Load Preset 20"
-			, hint: "If the current live camera is PTZ, loads preset 20."
-			, actionDown: function () { BI_Hotkey_PtzPreset(20); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset21"
-			, value: "0|0|1|49" // 49: 1
-			, hotkey: true
-			, label: "Load Preset 21"
-			, hint: "If the current live camera is PTZ, loads preset 1."
-			, actionDown: function () { BI_Hotkey_PtzPreset(21); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset22"
-			, value: "0|0|1|50" // 50: 2
-			, hotkey: true
-			, label: "Load Preset 22"
-			, hint: "If the current live camera is PTZ, loads preset 22."
-			, actionDown: function () { BI_Hotkey_PtzPreset(22); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset23"
-			, value: "0|0|1|51" // 51: 3
-			, hotkey: true
-			, label: "Load Preset 23"
-			, hint: "If the current live camera is PTZ, loads preset 23."
-			, actionDown: function () { BI_Hotkey_PtzPreset(23); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset24"
-			, value: "0|0|1|52" // 52: 4
-			, hotkey: true
-			, label: "Load Preset 24"
-			, hint: "If the current live camera is PTZ, loads preset 24."
-			, actionDown: function () { BI_Hotkey_PtzPreset(24); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset25"
-			, value: "0|0|1|53" // 53: 5
-			, hotkey: true
-			, label: "Load Preset 25"
-			, hint: "If the current live camera is PTZ, loads preset 25."
-			, actionDown: function () { BI_Hotkey_PtzPreset(25); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset26"
-			, value: "0|0|1|54" // 54: 6
-			, hotkey: true
-			, label: "Load Preset 26"
-			, hint: "If the current live camera is PTZ, loads preset 26."
-			, actionDown: function () { BI_Hotkey_PtzPreset(26); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset27"
-			, value: "0|0|1|55" // 55: 7
-			, hotkey: true
-			, label: "Load Preset 27"
-			, hint: "If the current live camera is PTZ, loads preset 27."
-			, actionDown: function () { BI_Hotkey_PtzPreset(27); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset28"
-			, value: "0|0|1|56" // 56: 8
-			, hotkey: true
-			, label: "Load Preset 28"
-			, hint: "If the current live camera is PTZ, loads preset 28."
-			, actionDown: function () { BI_Hotkey_PtzPreset(28); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset29"
-			, value: "0|0|1|57" // 57: 9
-			, hotkey: true
-			, label: "Load Preset 29"
-			, hint: "If the current live camera is PTZ, loads preset 29."
-			, actionDown: function () { BI_Hotkey_PtzPreset(29); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset30"
-			, value: "0|0|1|48" // 48: 0
-			, hotkey: true
-			, label: "Load Preset 30"
-			, hint: "If the current live camera is PTZ, loads preset 30."
-			, actionDown: function () { BI_Hotkey_PtzPreset(30); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset31"
-			, value: "1|0|1|49" // 49: 1
-			, hotkey: true
-			, label: "Load Preset 31"
-			, hint: "If the current live camera is PTZ, loads preset 31."
-			, actionDown: function () { BI_Hotkey_PtzPreset(31); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset32"
-			, value: "1|0|1|50" // 50: 2
-			, hotkey: true
-			, label: "Load Preset 32"
-			, hint: "If the current live camera is PTZ, loads preset 32."
-			, actionDown: function () { BI_Hotkey_PtzPreset(32); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset33"
-			, value: "1|0|1|51" // 51: 3
-			, hotkey: true
-			, label: "Load Preset 33"
-			, hint: "If the current live camera is PTZ, loads preset 33."
-			, actionDown: function () { BI_Hotkey_PtzPreset(33); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset34"
-			, value: "1|0|1|52" // 52: 4
-			, hotkey: true
-			, label: "Load Preset 34"
-			, hint: "If the current live camera is PTZ, loads preset 34."
-			, actionDown: function () { BI_Hotkey_PtzPreset(34); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset35"
-			, value: "1|0|1|53" // 53: 5
-			, hotkey: true
-			, label: "Load Preset 35"
-			, hint: "If the current live camera is PTZ, loads preset 35."
-			, actionDown: function () { BI_Hotkey_PtzPreset(35); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset36"
-			, value: "1|0|1|54" // 54: 6
-			, hotkey: true
-			, label: "Load Preset 36"
-			, hint: "If the current live camera is PTZ, loads preset 36."
-			, actionDown: function () { BI_Hotkey_PtzPreset(36); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset37"
-			, value: "1|0|1|55" // 55: 7
-			, hotkey: true
-			, label: "Load Preset 37"
-			, hint: "If the current live camera is PTZ, loads preset 37."
-			, actionDown: function () { BI_Hotkey_PtzPreset(37); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset38"
-			, value: "1|0|1|56" // 56: 8
-			, hotkey: true
-			, label: "Load Preset 38"
-			, hint: "If the current live camera is PTZ, loads preset 38."
-			, actionDown: function () { BI_Hotkey_PtzPreset(38); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset39"
-			, value: "1|0|1|57" // 57: 9
-			, hotkey: true
-			, label: "Load Preset 39"
-			, hint: "If the current live camera is PTZ, loads preset 39."
-			, actionDown: function () { BI_Hotkey_PtzPreset(39); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_hotkey_ptzPreset40"
-			, value: "1|0|1|48" // 48: 0
-			, hotkey: true
-			, label: "Load Preset 40"
-			, hint: "If the current live camera is PTZ, loads preset 40."
-			, actionDown: function () { BI_Hotkey_PtzPreset(40); }
-			, category: "Hotkeys"
-		}
-		, {
-			key: "ui3_cameraLabels_enabled"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Camera Labels Enabled'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_multiCameras"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Label multi-camera streams'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_singleCameras"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Label single-camera streams'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_text"
-			, value: CameraLabelTextValues.Name
-			, inputType: "select"
-			, options: [CameraLabelTextValues.Name, CameraLabelTextValues.ShortName, CameraLabelTextValues.Both]
-			, label: "Label Text"
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_position"
-			, value: CameraLabelPositionValues.Top
-			, inputType: "select"
-			, options: [CameraLabelPositionValues.Above, CameraLabelPositionValues.Top, CameraLabelPositionValues.Bottom, CameraLabelPositionValues.Below]
-			, label: "Label Position"
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_fontSize"
-			, value: 10
-			, inputType: "number"
-			, minValue: 0
-			, maxValue: 128
-			, label: "Font Size"
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_minimumFontSize"
-			, value: 6
-			, inputType: "number"
-			, minValue: 0
-			, maxValue: 128
-			, label: "Min Font Size"
-			, hint: "When a group view is rendered smaller than native resolution, font size is scaled down no smaller than this."
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_backgroundColor"
-			, value: "#000000"
-			, inputType: "color"
-			, label: 'Background Color'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_textColor"
-			, value: "#FFFFFF"
-			, inputType: "color"
-			, label: 'Text Color'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_cameraColor"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Use Camera Color<div class="settingDesc">(ignore colors set above)</div>'
-			, onChange: onui3_cameraLabelsChanged
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_backgroundOpacity"
-			, value: 100
-			, minValue: 0
-			, maxValue: 100
-			, step: 1
-			, unitLabel: "%"
-			, inputType: "range"
-			, label: 'Background Opacity'
-			, onChange: onui3_cameraLabelsChanged
-			, changeOnStep: true
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_cameraLabels_textOpacity"
-			, value: 100
-			, minValue: 0
-			, maxValue: 100
-			, step: 1
-			, unitLabel: "%"
-			, inputType: "range"
-			, label: 'Text Opacity'
-			, onChange: onui3_cameraLabelsChanged
-			, changeOnStep: true
-			, category: "Camera Labels"
-		}
-		, {
-			key: "ui3_wheelZoomMethod"
-			, value: "Adjustable"
-			, inputType: "select"
-			, options: ["Adjustable", "Legacy"]
-			, label: "Digital Zoom Method"
-			, onChange: OnChange_ui3_wheelZoomMethod
-			, category: "Digital Zoom"
-		}
-		, {
-			key: "ui3_wheelAdjustableSpeed"
-			, value: 400
-			, minValue: 0
-			, maxValue: 2000
-			, step: 1
-			, inputType: "range"
-			, label: 'Digital Zoom Speed<br/>(Requires zoom method "Adjustable")'
-			, changeOnStep: true
-			, hint: "Default: 400"
-			, category: "Digital Zoom"
-		}
-		, {
-			key: "ui3_wheelZoomReverse"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Reverse Mouse Wheel Zoom'
-			, hint: "By default, UI3 follows the de-facto standard for mouse wheel zoom, where up zooms in."
-			, category: "Digital Zoom"
-		}
-		, {
-			key: "ui3_zoom1x_mode"
-			, value: Zoom1xOptions.Camera
-			, inputType: "select"
-			, options: [Zoom1xOptions.Camera, Zoom1xOptions.Stream]
-			, label: 'At 1x zoom, match resolution of: '
-			, hint: 'Choose "' + Zoom1xOptions.Stream + '" if clip playback has the wrong aspect ratio.'
-			, category: "Digital Zoom"
-		}
-		, {
-			key: "ui3_fullscreen_videoonly"
-			, value: "1"
-			, inputType: "checkbox"
-			, label: 'Maximize Video in Full Screen Mode'
-			, hint: 'If "yes", toggling Full Screen mode automatically toggles the video player\'s maximize state.'
-			, onChange: OnChange_ui3_fullscreen_videoonly
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_show_maximize_button"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Always Show Maximize Button<div class="settingDesc">by Full Screen button</div>'
-			, hint: 'If "no", the Maximize button only appears while the video player is maximized, to allow you to un-maximize.'
-			, onChange: OnChange_ui3_show_maximize_button
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_is_maximized"
-			, value: "0"
-		}
-		, {
-			key: "ui3_ir_brightness_contrast"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'PTZ: IR, Brightness, Contrast<br><a href="javascript:UIHelp.LearnMore(\'IR Brightness Contrast\')">(learn more)</a>'
-			, onChange: OnChange_ui3_ir_brightness_contrast
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_ptzPresetShowCount"
-			, value: "20"
-			, inputType: "select"
-			, options: ["0", "10", "20", "30", "40"]
-			, label: 'PTZ Preset Count'
-			, onChange: OnChange_ui3_ptzPresetShowCount
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_show_cameras_in_group_dropdowns"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Show Cameras in Group Dropdowns'
-			, hint: 'If enabled, the "Current Group" and "Filter by" dropdown lists will include individual cameras.'
-			, onChange: OnChange_ui3_show_cameras_in_group_dropdowns
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_show_session_success"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Show Session Status at Startup'
-			, hint: 'If enabled, session status is shown in the lower-right corner when the UI loads.'
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_bypass_single_camera_groups"
-			, value: "0"
-			, inputType: "checkbox"
-			, label: 'Bypass Single-Camera Groups<div class="settingDesc">(enable this if you have trouble with PTZ controls; disable this if you want to configure a group with only one visible camera)</div>'
-			, onChange: OnChange_ui3_bypass_single_camera_groups
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_contextMenus_trigger"
-			, value: "Right-Click"
-			, options: ["Right-Click", "Long-Press", "Double-Click"]
-			, inputType: "select"
-			, label: 'Context Menu Trigger<br><a href="javascript:UIHelp.LearnMore(\'Context Menu Trigger\')">(learn more)</a>'
-			, onChange: OnChange_ui3_contextMenus_trigger
-			, category: "Extra"
-		}
-		, {
-			key: "ui3_system_name_button"
-			, value: "About This UI"
-			, inputType: "select"
-			, options: []
-			, getOptions: getSystemNameButtonOptions
-			, label: 'System Name Button Action'
-			, hint: 'This action occurs when you click the system name in the upper left.'
-			, onChange: setSystemNameButtonState
-			, category: "Extra"
-		}
+		key: "ui3_defaultCameraGroupId"
+		, value: "index"
+	}
+		, {
+		key: "ui3_audioVolume"
+		, value: 0
+	}
+		, {
+		key: "ui3_audioMute"
+		, value: "1"
+	}
+		, {
+		key: "ui3_streamingQuality"
+		, value: "1080p VBR^"
+	}
+		, {
+		key: "ui3_playback_reverse"
+		, value: "0"
+	}
+		, {
+		key: "ui3_playback_speed"
+		, value: "1"
+	}
+		, {
+		key: "ui3_playback_autoplay"
+		, value: "0"
+	}
+		, {
+		key: "ui3_playback_loop"
+		, value: "0"
+	}
+		, {
+		key: "ui3_current_dbView"
+		, value: "all"
+	}
+		, {
+		key: "ui3_cliplist_larger_thumbnails"
+		, value: "0"
+	}
+		, {
+		key: "ui3_cliplist_mouseover_thumbnails"
+		, value: "1"
+	}
+		, {
+		key: "ui3_clip_export_format"
+		, value: 1
+	}
+		, {
+		key: "ui3_clip_export_profile"
+		, value: 0
+	}
+		, {
+		key: "ui3_clip_export_substream"
+		, value: "0"
+	}
+		, {
+		key: "ui3_clip_export_withAudio"
+		, value: "1"
+	}
+		, {
+		key: "ui3_clip_export_reencode"
+		, value: "0"
+	}
+		, {
+		key: "ui3_clip_export_overlay"
+		, value: "0"
+	}
+		, {
+		key: "ui3_clip_export_timelapse"
+		, value: "0"
+	}
+		, {
+		key: "ui3_clip_export_timelapseMultiplier"
+		, value: 10
+	}
+		, {
+		key: "ui3_clip_export_timelapseFps"
+		, value: 30
+	}
+		, {
+		key: "bi_rememberMe"
+		, value: "0"
+	}
+		, {
+		key: "bi_username"
+		, value: ""
+	}
+		, {
+		key: "bi_password"
+		, value: ""
+	}
+		, {
+		key: "bi_lastunload"
+		, value: 0
+	}
+		, {
+		key: "ui3_webcasting_disabled_dontShowAgain"
+		, value: "0"
+	}
+		, {
+		key: "ui3_feature_enabled_volumeBar" // ui3_feature_enabled keys are tied to unique IDs in togglableUIFeatures
+		, value: "1"
+	}
+		, {
+		key: "ui3_feature_enabled_profileStatus"
+		, value: "1"
+	}
+		, {
+		key: "ui3_feature_enabled_stopLight"
+		, value: "1"
+	}
+		, {
+		key: "ui3_feature_enabled_globalSchedule"
+		, value: "1"
+	}
+		, {
+		key: "ui3_feature_enabled_ptzControls"
+		, value: "1"
+	}
+		, {
+		key: "ui3_feature_enabled_clipNameLabel"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_ptz"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_profileStatus"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_schedule"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_currentGroup"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_streamingQuality"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_serverStatus"
+		, value: "1"
+	}
+		, {
+		key: "ui3_collapsible_filterRecordings"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_info_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_gs_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_mt_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_mro_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_mgmt_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_General_Settings_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Video_Player_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_UI_Status_Sounds_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Top_Bar_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Clips___Alerts_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Clip___Alert_Icons_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Event_Triggered_Icons_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Event_Triggered_Sounds_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Hotkeys_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Camera_Labels_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Digital_Zoom_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_cps_uiSettings_category_Extra_visible"
+		, value: "1"
+	}
+		, {
+		key: "ui3_disableIEWarning"
+		, value: "0"
+	}
+		, {
+		key: "ui3_maxGOP"
+		, value: 1000
+	}
+		, {
+		key: "ui3_clipOverlayCfg"
+		, value: ""
+	}
+		, {
+		key: "ui3_groupCfg"
+		, value: ""
+	}
+		, {
+		key: "ui3_prioritizeTriggered"
+		, value: "0"
+	}
+		, {
+		key: "ui3_streamingProfileArray"
+		, value: "[]"
+		, category: "Streaming Profiles" // This category isn't shown in UI Settings, but has special-case logic in ui3-local-overrides.js export.
+	}
+		, {
+		key: "ui3_timeout"
+		, value: 10
+		, inputType: "number"
+		, minValue: 0
+		, maxValue: 525600
+		, label: 'Idle Timeout<div class="settingDesc">The UI will close itself after this many minutes of inactivity. (0 to disable)</div>'
+		, category: "General Settings"
+	}
+		, {
+		key: "ui3_preferred_ui_scale"
+		, value: "Auto"
+		, inputType: "select"
+		, options: ["Auto", "Large", "Medium", "Small", "Smaller"]
+		, label: "Preferred UI Scale"
+		, onChange: OnChange_ui3_preferred_ui_scale
+		, category: "General Settings"
+	}
+		, {
+		key: "ui3_sideBarPosition"
+		, value: "Left"
+		, inputType: "select"
+		, options: ["Left", "Right"]
+		, label: "Side Bar Position"
+		, onChange: OnChange_ui3_sideBarPosition
+		, category: "General Settings"
+	}
+		, {
+		key: "ui3_time24hour"
+		, value: localeUses24HourTime() ? "1" : "0"
+		, inputType: "checkbox"
+		, label: '24-Hour Time'
+		, onChange: OnChange_ui3_time24hour
+		, category: "General Settings"
+	}
+		, {
+		key: "ui3_doubleClick_behavior"
+		, value: "Recordings"
+		, inputType: "select"
+		, options: ["None", "Live View", "Recordings", "Both"]
+		, label: 'Double-Click to Fullscreen<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Double-Click to Fullscreen\')">(learn more)</a></div>'
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_edge_fetch_bug_h264_enable"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<span style="color:#FF0000;font-weight:bold">Enable H.264 Player</span><div class="settingDesc">This browser has known compatiblity issues. <a href="javascript:UIHelp.LearnMore(\'Edge Fetch Bug\')">(learn more)</a></div>'
+		, onChange: OnChange_ui3_edge_fetch_bug_h264_enable
+		, preconditionFunc: Precondition_ui3_edge_fetch_bug_h264_enable
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_h264_choice3"
+		, value: GetDefaultH264PlayerOption()
+		, inputType: "select"
+		, options: GetH264PlayerOptions()
+		, label: 'H.264 Player <a href="javascript:UIHelp.LearnMore(\'H.264 Player Options\')">(learn more)</a>'
+		, onChange: OnChange_ui3_h264_choice3
+		, preconditionFunc: Precondition_ui3_h264_choice3
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_streamingProfileBitRateMax"
+		, value: -1
+		, inputType: "number"
+		, minValue: -1
+		, maxValue: 8192
+		, label: 'Maximum H.264 Kbps<div class="settingDesc">(10-8192, disabled if less than 10)</div>'
+		, hint: "Useful for slow connections. Audio streams are not affected by this setting."
+		, onChange: OnChange_ui3_streamingProfileBitRateMax
+		, preconditionFunc: Precondition_ui3_streamingProfileBitRateMax
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_html5_delay_compensation"
+		, value: HTML5DelayCompensationOptions.Normal
+		, inputType: "select"
+		, options: [HTML5DelayCompensationOptions.None, HTML5DelayCompensationOptions.Weak, HTML5DelayCompensationOptions.Normal, HTML5DelayCompensationOptions.Strong]
+		, label: 'HTML5 Video Delay Compensation <div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'HTML5 Video Delay Compensation\')">(learn more)</a></div>'
+		, preconditionFunc: Precondition_ui3_html5_delay_compensation
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_jpegSupersampling"
+		, value: 1
+		, minValue: 0.01
+		, maxValue: 2
+		, step: 0.01
+		, inputType: "range"
+		, label: 'Jpeg Video Supersampling Factor'
+		, changeOnStep: true
+		, hint: "(Default: 1)\n\nJpeg video frames loaded by UI3 will have their dimensions scaled by this amount.\n\nLow values save bandwidth, while high values improve quality slightly."
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_web_audio_autoplay_warning"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Warn if audio playback requires user input'
+		, hint: 'When set to "Yes", a full-page overlay will appear if camera audio playback requires user input. Otherwise, the audio icon will simply turn red.'
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_pause_when_hidden"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Pause when tab is inactive'
+		, hint: 'When set to "Yes", video playback will pause when the tab is inactive.\nSelect "No" to allow audio and event-triggered sounds to play while the browser tab is inactive.\nRecommended: "Yes"'
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_download_snapshot_method"
+		, value: "Server"
+		, inputType: "select"
+		, options: ["Server", "Local (JPEG)", "Local (PNG)"]
+		, label: 'Source of snapshot downloads<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Local Snapshots\')">(learn more)</a></div>'
+		, onChange: OnChange_ui3_download_snapshot_method
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_comment_download_snapshot_local"
+		, value: ""
+		, inputType: "comment"
+		, comment: GenerateLocalSnapshotsComment
+		, preconditionFunc: Precondition_ui3_download_snapshot_local
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_download_snapshot_server_quality"
+		, value: 85
+		, minValue: 1
+		, maxValue: 100
+		, step: 1
+		, unitLabel: "%"
+		, inputType: "range"
+		, label: 'Server-sourced Snapshot Jpeg Quality'
+		, hint: 'Default: 85%'
+		, changeOnStep: false
+		, preconditionFunc: Precondition_ui3_download_snapshot_server
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_prioritizeTriggered_triggerMode"
+		, value: "Trigger"
+		, inputType: "select"
+		, options: ["Trigger", "Motion"]
+		, label: '<svg class="icon clipicon prioritizeTriggeredButton on"><use xlink:href="#svg_x5F_Alert"></use></svg> Auto-Maximize upon...<div class="settingDesc" style="margin-left: 35px;"><i>(experimental feature)</i></div>'
+		, hint: '"Motion" uses Blue Iris\'s built-in motion detection.\n\n"Trigger" works with any method of trigger (such as ONVIF or audio), but may not respond as quickly.'
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_show_picture_in_picture_button"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Picture-in-Picture Button'
+		, hint: 'Requires a supported browser and H.264 player: HTML5.'
+		, onChange: OnChange_ui3_show_picture_in_picture_button
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_audio_codec"
+		, value: flac_supported ? "FLAC" : GetAudioCodecOptions()[0]
+		, inputType: "select"
+		, options: GetAudioCodecOptions()
+		, label: 'Audio Codec' + (!flac_supported ? '<div class="settingDesc">(FLAC unavailable in this browser)</div>' : '')
+		, onChange: OnChange_ui3_audio_codec
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_audio_buffer_ms"
+		, value: 700
+		, minValue: 0
+		, maxValue: 5000
+		, inputType: "number"
+		, label: 'Audio Buffer Size Milliseconds<div class="settingDesc">(max audio delay)</div>'
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_dynamicGroupLayout"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Dynamic Group Layout<div class="settingDesc"><a href="javascript:UIHelp.LearnMore(\'Dynamic Group Layout\')">(learn more)</a></div>'
+		, onChange: OnChange_ui3_dynamicGroupLayout
+		, category: "Video Player"
+	}
+		, {
+		key: "ui3_uiStatusSounds"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'UI Status Sounds<div class="settingDesc">Sound is emitted when certain important events occur. <a href="javascript:UIHelp.LearnMore(\'UI Status Sounds\')">(learn more)</a></div>'
+		, onChange: OnChange_ui3_uiStatusSounds
+		, category: "UI Status Sounds"
+	}
+		, {
+		key: "ui3_uiStatusSpeech"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'UI Status Speech<div class="settingDesc">Requires compatible browser. <a href="javascript:TestSpeech()">Click to test.</a></div>'
+		, onChange: OnChange_ui3_uiStatusSpeech
+		, preconditionFunc: Precondition_ui3_speechAvailable
+		, category: "UI Status Sounds"
+	}
+		, {
+		key: "ui3_speechVoice"
+		, value: ""
+		, inputType: "select"
+		, options: []
+		, getOptions: GetSpeechVoiceOptions
+		, label: 'Speech Voice'
+		, onChange: OnChange_ui3_speechVoice
+		, preconditionFunc: Precondition_ui3_speechAvailable
+		, category: "UI Status Sounds"
+	}
+		, {
+		key: "ui3_topbar_allclips_shortcut_show"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: "Shortcut to All Clips"
+		, onChange: OnChange_ui3_topbar_allclips_shortcut_show
+		, category: "Top Bar"
+	}
+		, {
+		key: "ui3_topbar_alerts_shortcut_show"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: "Shortcut to Alerts"
+		, onChange: OnChange_ui3_topbar_alerts_shortcut_show
+		, category: "Top Bar"
+	}
+		, {
+		key: "ui3_topbar_alerts_shortcut_counter"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Show New Alerts Counter<div class="settingDesc">(requires Shortcut to Alerts)</div>'
+		, onChange: OnChange_ui3_topbar_alerts_shortcut_counter
+		, category: "Top Bar"
+	}
+		, {
+		key: "ui3_topbar_warnings_counter"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Show New Warnings Counter<div class="settingDesc">(appears on Main Menu / System Log)</div>'
+		, onChange: OnChange_ui3_topbar_warnings_counter
+		, category: "Top Bar"
+	}
+		, {
+		key: "ui3_clipPreviewEnabled"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: "Clip Preview Animations"
+		, hint: "When enabled, mousing over the alert/clip list shows a rapid animated preview.  Video streaming performance may suffer while the animation is active."
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_hires_jpeg_popups"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Use Hi-res JPEG for alert mouseover'
+		, hint: "This only affects alerts that have Hi-res JPEG images saved by Blue Iris"
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_hires_jpeg_disables_preview_animation"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'No preview animation for alerts with Hi-res JPEG'
+		, hint: 'The preview animation would prevent you from reading annotations from deepstack AI.'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_clip_preview_num_frames"
+		, value: 8
+		, minValue: 2
+		, maxValue: 100
+		, inputType: "number"
+		, label: 'Number of frames in clip preview'
+		, hint: 'Default: 8'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_clip_preview_speed"
+		, value: 5
+		, minValue: 1
+		, maxValue: 60
+		, step: 1
+		, unitLabel: " fps"
+		, inputType: "range"
+		, label: 'Clip preview speed up to'
+		, hint: 'Default: 5 fps'
+		, changeOnStep: false
+		, preconditionFunc: Precondition_ui3_download_snapshot_server
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_pc_next_prev_buttons"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Next/Previous'
+		, onChange: OnChange_ui3_pc_next_prev_buttons
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_pc_seek_buttons"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Skip Buttons'
+		, onChange: OnChange_ui3_pc_seek_buttons
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_pc_seek_1frame_buttons"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Skip 1 Frame Buttons'
+		, onChange: OnChange_ui3_pc_seek_1frame_buttons
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_pc_delete_button"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Delete Button'
+		, onChange: OnChange_ui3_pc_delete_button
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_extra_playback_controls_padding"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Extra Padding'
+		, onChange: OnChange_ui3_extra_playback_controls_padding
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_extra_playback_controls_timestamp"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Real Timestamp<br>When Streaming H.264'
+		, hint: 'Adds a real-world timestamp to the playback controls, available only when streaming .bvr recordings with an H.264 streaming method.'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_extra_playback_controls_alwaysVisible"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Playback Controls: Always Visible'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_clipDownloadOriginalName"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Preserve Original File Names<div class="settingDesc">when downloading clips</div>'
+		, hint: 'Does not affect clip "exports"'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_askForDelete"
+		, value: "All"
+		, inputType: "select"
+		, options: ["All", // All is the original default, will ask to confirm any delete
+			"Multiple", // Multiple will only ask to confirm when multiple items are to be deleted
+			"None"] // Will not ask to confirm deletions
+		, label: 'Confirm deletes for'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_allow_clip_deletion"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Allow Clip Deletion'
+		, onChange: OnChange_ui3_allow_clip_deletion
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_download_exports_automatically"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Download Exports Automatically'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_seek_with_substream"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Seek with Sub Stream<div class="settingDesc">for better performance</div>'
+		, hint: 'Only affects recordings that include main and sub streams'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_openARecording"
+		, value: "No"
+		, inputType: "select"
+		, options: ["No", "First", "Last"]
+		, label: 'Automatically Open a Recording<div class="settingDesc">when loading Alerts or Clips tab</div>'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_clip_navigation_direction"
+		, value: "Oldest First"
+		, inputType: "select"
+		, options: ["Newest First", // "next clip" is older, further down the clip list.
+			"Oldest First"] // "next clip" is newer, further up the clip list.
+		, label: 'Clip Review Order/Direction'
+		, hint: 'Choose "Oldest First" if you prefer to review clips from oldest to newest.  Affects autoplay direction and Next/Previous button logic.  May affect other aspects of clip navigation in the future.'
+		, category: "Clips / Alerts"
+	}
+		, {
+		key: "ui3_clipicon_trigger_motion"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_run"></use></svg> for motion-triggered alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_trigger_audio"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_volumeUp"></use></svg> for audio-triggered alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_trigger_external"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon"><use xlink:href="#svg_x5F_Alert1"></use></svg> for externally-triggered alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_trigger_group"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_quilt"></use></svg> for group-triggered alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_trigger_sentry"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#sentry_logo"></use></svg> for AI-verified alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_trigger_sentry_occupied"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#sentry_human"></use></svg> for AI-verified alerts that continue a previous alert'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_clip_audio"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_volumeUp"></use></svg> for clips with audio'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_clip_backingup"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_cloudUploading"></use></svg> for clips that are being backed up'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_clip_backup"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_cloudUploaded"></use></svg> for clips that have been backed up'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_protect"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip"><use xlink:href="#svg_mio_lock"></use></svg> for protected items'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_clipicon_is_new"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon"><use xlink:href="#svg_x5F_Stoplight"></use></svg> for new alerts'
+		, category: "Clip / Alert Icons"
+	}
+		, {
+		key: "ui3_comment_eventTriggeredIcons_Heading"
+		, value: ""
+		, inputType: "comment"
+		, comment: GenerateEventTriggeredIconsComment
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_icon_motion"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip" style="fill: rgba(120,205,255,1)"><use xlink:href="#svg_mio_run"></use></svg> on Motion Detected'
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_icon_trigger"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon" style="fill: rgba(255,64,64,1)"><use xlink:href="#svg_x5F_Alert1"></use></svg> on Camera Triggered'
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_icon_recording"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_Stoplight"></use></svg> on Camera Recording'
+		, hint: "Does not appear when viewing a group of cameras"
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_comment_camera_overlay_icons_Heading"
+		, value: ""
+		, inputType: "comment"
+		, comment: "The following icons are shown <b>per-camera</b> and do not require an H.264 stream."
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_camera_overlay_icon_motion_trigger"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_mio_run"></use></svg> on Motion Trigger'
+		, onChange: OnChange_ui3_camera_overlay_icons
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_camera_overlay_icon_audio_trigger"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_mio_volumeUp"></use></svg> on Audio Trigger'
+		, onChange: OnChange_ui3_camera_overlay_icons
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_camera_overlay_icon_generic_trigger"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_Alert1"></use></svg> on Other Trigger'
+		, onChange: OnChange_ui3_camera_overlay_icons
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_camera_overlay_icon_webcasting_disabled"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_HoldProfile"></use></svg> if Webcasting Disabled'
+		, onChange: OnChange_ui3_camera_overlay_icons
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_icons_extraVisibility"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Extra Visibility For Icons'
+		, onChange: OnChange_ui3_icons_extraVisibility
+		, category: "Event-Triggered Icons"
+	}
+		, {
+		key: "ui3_comment_eventTriggeredSounds_Heading"
+		, value: ""
+		, inputType: "comment"
+		, comment: GenerateEventTriggeredSoundsComment
+		, category: "Event-Triggered Sounds"
+	}
+		, {
+		key: "ui3_sound_motion"
+		, value: "None"
+		, inputType: "select"
+		, options: []
+		, getOptions: getBISoundOptions
+		, alwaysRefreshOptions: true
+		, label: 'Motion Detected'
+		, onChange: function () { biSoundPlayer.PlayEvent("motion"); }
+		, category: "Event-Triggered Sounds"
+	}
+		, {
+		key: "ui3_sound_trigger"
+		, value: "None"
+		, inputType: "select"
+		, options: []
+		, getOptions: getBISoundOptions
+		, alwaysRefreshOptions: true
+		, label: 'Camera Triggered'
+		, onChange: function () { biSoundPlayer.PlayEvent("trigger"); }
+		, category: "Event-Triggered Sounds"
+	}
+		, {
+		key: "ui3_eventSoundVolume"
+		, value: 100
+		, minValue: 0
+		, maxValue: 100
+		, step: 1
+		, unitLabel: "%"
+		, inputType: "range"
+		, label: 'Sound Effect Volume'
+		, onChange: function () { biSoundPlayer.AdjustVolume(); }
+		, changeOnStep: true
+		, category: "Event-Triggered Sounds"
+	}
+		, {
+		key: "ui3_hotkey_maximizeVideoArea"
+		, value: "1|0|0|192" // 192: tilde (~`)
+		, hotkey: true
+		, label: "Maximize Video Area"
+		, hint: "Shows or hides the left and top control bars. This can be triggered on page load via the url parameter \"maximize=1\"."
+		, actionDown: BI_Hotkey_MaximizeVideoArea
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_togglefullscreen"
+		, value: "0|0|0|192" // 192: tilde (~`)
+		, hotkey: true
+		, label: "Full Screen Mode"
+		, hint: "Toggles Full Screen Mode and shows or hides the left and top control bars according to UI defaults."
+		, actionDown: BI_Hotkey_FullScreen
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_tab_live"
+		, value: "0|0|0|112" // 112: F1
+		, hotkey: true
+		, label: "Load Tab: Live View"
+		, hint: "Opens the Live View tab"
+		, actionDown: BI_Hotkey_Load_Tab_Live
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_tab_clips"
+		, value: "0|0|0|113" // 113: F2
+		, hotkey: true
+		, label: "Load Tab: Clips"
+		, hint: "Opens the Clips tab"
+		, actionDown: BI_Hotkey_Load_Tab_Clips
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_cameraLabels"
+		, value: "1|0|0|76" // 76: L
+		, hotkey: true
+		, label: "Toggle Camera Labels"
+		, actionDown: BI_Hotkey_Toggle_Camera_Labels
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_downloadframe"
+		, value: "1|0|0|83" // 83: S
+		, hotkey: true
+		, label: "Download Frame"
+		, actionDown: BI_Hotkey_DownloadFrame
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_toggleMute"
+		, value: "1|0|0|77" // 77: M
+		, hotkey: true
+		, label: "Toggle Camera Mute"
+		, actionDown: BI_Hotkey_ToggleMute
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_nextCamera"
+		, value: "0|0|0|190" // 190: . (period)
+		, hotkey: true
+		, label: "Next Camera"
+		, hint: "Manually cycles to the next camera when a camera is maximized."
+		, actionDown: BI_Hotkey_NextCamera
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_prevCamera"
+		, value: "0|0|0|188" // 188: , (comma)
+		, hotkey: true
+		, label: "Previous Camera"
+		, hint: "Manually cycles to the previous camera when a camera is maximized."
+		, actionDown: BI_Hotkey_PreviousCamera
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_nextGroup"
+		, value: "1|0|1|190" // 190: CTRL + SHIFT + . (period)
+		, hotkey: true
+		, label: "Next Group"
+		, hint: "Manually loads your next group or cycle stream."
+		, actionDown: BI_Hotkey_NextGroup
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_prevGroup"
+		, value: "1|0|1|188" // 188: CTRL + SHIFT + , (comma)
+		, hotkey: true
+		, label: "Previous Group"
+		, hint: "Manually loads your previous group or cycle stream."
+		, actionDown: BI_Hotkey_PreviousGroup
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_playpause"
+		, value: "0|0|0|32" // 32: space
+		, hotkey: true
+		, label: "Play/Pause"
+		, hint: "Plays or pauses the current recording."
+		, actionDown: BI_Hotkey_PlayPause
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_delete"
+		, value: "0|0|0|46" // 46: delete
+		, hotkey: true
+		, label: "Delete"
+		, hint: "Deletes the current recording."
+		, actionDown: BI_Hotkey_Delete
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_toggleReverse"
+		, value: "0|0|0|8" // 8: backspace
+		, hotkey: true
+		, label: "Reverse Playback"
+		, hint: "Toggles between Forward and Reverse playback."
+		, actionDown: BI_Hotkey_ToggleReverse
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_newerClip"
+		, value: "0|0|0|38" // 38: up arrow
+		, hotkey: true
+		, label: "Navigate Up One Clip"
+		, hint: "Load the next clip, higher up in the list."
+		, actionDown: BI_Hotkey_NextClip
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_olderClip"
+		, value: "0|0|0|40" // 40: down arrow
+		, hotkey: true
+		, label: "Navigate Down One Clip"
+		, hint: "Load the previous clip, lower down in the list."
+		, actionDown: BI_Hotkey_PreviousClip
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_skipAhead"
+		, value: "0|0|0|39" // 39: right arrow
+		, hotkey: true
+		, label: "Skip Ahead"
+		, hint: "Skips ahead in the current recording by a configurable number of seconds."
+		, actionDown: BI_Hotkey_SkipAhead
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_skipBack"
+		, value: "0|0|0|37" // 37: left arrow
+		, hotkey: true
+		, label: "Skip Back"
+		, hint: "Skips back in the current recording by a configurable number of seconds."
+		, actionDown: BI_Hotkey_SkipBack
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_skipAmount"
+		, value: 10
+		, inputType: "number"
+		, minValue: 0
+		, maxValue: 9999
+		, label: "Skip Time (seconds)"
+		, hint: "[0.01-9999] (default: 10) \r\nNumber of seconds to skip forward and back when using hotkeys to skip."
+		, onChange: OnChange_ui3_skipAmount
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_skipAhead1Frame"
+		, value: "0|0|0|190" // 190: . (period)
+		, hotkey: true
+		, label: "Skip Ahead 1 Frame"
+		, hint: "Skips ahead in the current recording by approximately one frame."
+		, actionDown: BI_Hotkey_SkipAhead1Frame
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_skipBack1Frame"
+		, value: "0|0|0|188" // 188: , (comma)
+		, hotkey: true
+		, label: "Skip Back 1 Frame"
+		, hint: "Skips back in the current recording by approximately one frame."
+		, actionDown: BI_Hotkey_SkipBack1Frame
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_playback_faster"
+		, value: "0|0|0|221" // 221: ]
+		, hotkey: true
+		, label: "Playback Faster"
+		, hint: "Increases clip playback speed"
+		, actionDown: BI_Hotkey_PlaybackFaster
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_playback_slower"
+		, value: "0|0|0|219" // 219: [
+		, hotkey: true
+		, label: "Playback Slower"
+		, hint: "Decreases clip playback speed"
+		, actionDown: BI_Hotkey_PlaybackSlower
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_close_clip"
+		, value: "0|0|0|27" // 27: escape
+		, hotkey: true
+		, label: "Close Clip"
+		, hint: "Closes the current clip."
+		, actionDown: BI_Hotkey_CloseClip
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_close_camera"
+		, value: "0|0|0|27" // 27: escape
+		, hotkey: true
+		, label: "Close Camera"
+		, hint: "Closes the current live camera and returns to the group view."
+		, actionDown: BI_Hotkey_CloseCamera
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalZoomIn"
+		, value: "0|0|1|187" // 187: =
+		, hotkey: true
+		, label: "Digital Zoom In"
+		, hint: "This has the same function as rolling a mouse wheel one notch."
+		, actionDown: BI_Hotkey_DigitalZoomIn
+		, allowRepeatKey: true
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalZoomOut"
+		, value: "0|0|1|189" // : 189: -
+		, hotkey: true
+		, label: "Digital Zoom Out"
+		, hint: "This has the same function as rolling a mouse wheel one notch."
+		, actionDown: BI_Hotkey_DigitalZoomOut
+		, allowRepeatKey: true
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalPanUp"
+		, value: "0|0|1|38" // 38: up arrow
+		, hotkey: true
+		, label: "Digital Pan Up"
+		, hint: "If zoomed in with digital zoom, pans up."
+		, actionDown: BI_Hotkey_DigitalPanUp
+		, actionUp: BI_Hotkey_DigitalPanUp_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalPanDown"
+		, value: "0|0|1|40" // 40: down arrow
+		, hotkey: true
+		, label: "Digital Pan Down"
+		, hint: "If zoomed in with digital zoom, pans down."
+		, actionDown: BI_Hotkey_DigitalPanDown
+		, actionUp: BI_Hotkey_DigitalPanDown_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalPanLeft"
+		, value: "0|0|1|37" // 37: left arrow
+		, hotkey: true
+		, label: "Digital Pan Left"
+		, hint: "If zoomed in with digital zoom, pans left."
+		, actionDown: BI_Hotkey_DigitalPanLeft
+		, actionUp: BI_Hotkey_DigitalPanLeft_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_digitalPanRight"
+		, value: "0|0|1|39" // 39: right arrow
+		, hotkey: true
+		, label: "Digital Pan Right"
+		, hint: "If zoomed in with digital zoom, pans right."
+		, actionDown: BI_Hotkey_DigitalPanRight
+		, actionUp: BI_Hotkey_DigitalPanRight_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzUp"
+		, value: "0|0|0|38" // 38: up arrow
+		, hotkey: true
+		, label: "PTZ Up"
+		, hint: "If the current live camera is PTZ, moves the camera up."
+		, actionDown: BI_Hotkey_PtzUp
+		, actionUp: BI_Hotkey_PtzUp_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzDown"
+		, value: "0|0|0|40" // 40: down arrow
+		, hotkey: true
+		, label: "PTZ Down"
+		, hint: "If the current live camera is PTZ, moves the camera down."
+		, actionDown: BI_Hotkey_PtzDown
+		, actionUp: BI_Hotkey_PtzDown_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzLeft"
+		, value: "0|0|0|37" // 37: left arrow
+		, hotkey: true
+		, label: "PTZ Left"
+		, hint: "If the current live camera is PTZ, moves the camera left."
+		, actionDown: BI_Hotkey_PtzLeft
+		, actionUp: BI_Hotkey_PtzLeft_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzRight"
+		, value: "0|0|0|39" // 39: right arrow
+		, hotkey: true
+		, label: "PTZ Right"
+		, hint: "If the current live camera is PTZ, moves the camera right."
+		, actionDown: BI_Hotkey_PtzRight
+		, actionUp: BI_Hotkey_PtzRight_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzIn"
+		, value: "0|0|0|187" // 187: =
+		, hotkey: true
+		, label: "PTZ Zoom In"
+		, hint: "If the current live camera is PTZ, zooms the camera in."
+		, actionDown: BI_Hotkey_PtzIn
+		, actionUp: BI_Hotkey_PtzIn_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzOut"
+		, value: "0|0|0|189" // 189: -
+		, hotkey: true
+		, label: "PTZ Zoom Out"
+		, hint: "If the current live camera is PTZ, zooms the camera out."
+		, actionDown: BI_Hotkey_PtzOut
+		, actionUp: BI_Hotkey_PtzOut_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzFocusFar"
+		, value: "0|0|0|221" // 221: ]
+		, hotkey: true
+		, label: "PTZ Focus Far"
+		, hint: "If the current live camera is PTZ, focuses the camera further away."
+		, actionDown: BI_Hotkey_PtzFocusFar
+		, actionUp: BI_Hotkey_PtzFocusFar_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzFocusNear"
+		, value: "0|0|0|219" // 219: [
+		, hotkey: true
+		, label: "PTZ Focus Near"
+		, hint: "If the current live camera is PTZ, focuses the camera closer."
+		, actionDown: BI_Hotkey_PtzFocusNear
+		, actionUp: BI_Hotkey_PtzFocusNear_Up
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset1"
+		, value: "0|0|0|49" // 49: 1
+		, hotkey: true
+		, label: "Load Preset 1"
+		, hint: "If the current live camera is PTZ, loads preset 1."
+		, actionDown: function () { BI_Hotkey_PtzPreset(1); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset2"
+		, value: "0|0|0|50" // 50: 2
+		, hotkey: true
+		, label: "Load Preset 2"
+		, hint: "If the current live camera is PTZ, loads preset 2."
+		, actionDown: function () { BI_Hotkey_PtzPreset(2); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset3"
+		, value: "0|0|0|51" // 51: 3
+		, hotkey: true
+		, label: "Load Preset 3"
+		, hint: "If the current live camera is PTZ, loads preset 3."
+		, actionDown: function () { BI_Hotkey_PtzPreset(3); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset4"
+		, value: "0|0|0|52" // 52: 4
+		, hotkey: true
+		, label: "Load Preset 4"
+		, hint: "If the current live camera is PTZ, loads preset 4."
+		, actionDown: function () { BI_Hotkey_PtzPreset(4); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset5"
+		, value: "0|0|0|53" // 53: 5
+		, hotkey: true
+		, label: "Load Preset 5"
+		, hint: "If the current live camera is PTZ, loads preset 5."
+		, actionDown: function () { BI_Hotkey_PtzPreset(5); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset6"
+		, value: "0|0|0|54" // 54: 6
+		, hotkey: true
+		, label: "Load Preset 6"
+		, hint: "If the current live camera is PTZ, loads preset 6."
+		, actionDown: function () { BI_Hotkey_PtzPreset(6); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset7"
+		, value: "0|0|0|55" // 55: 7
+		, hotkey: true
+		, label: "Load Preset 7"
+		, hint: "If the current live camera is PTZ, loads preset 7."
+		, actionDown: function () { BI_Hotkey_PtzPreset(7); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset8"
+		, value: "0|0|0|56" // 56: 8
+		, hotkey: true
+		, label: "Load Preset 8"
+		, hint: "If the current live camera is PTZ, loads preset 8."
+		, actionDown: function () { BI_Hotkey_PtzPreset(8); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset9"
+		, value: "0|0|0|57" // 57: 9
+		, hotkey: true
+		, label: "Load Preset 9"
+		, hint: "If the current live camera is PTZ, loads preset 9."
+		, actionDown: function () { BI_Hotkey_PtzPreset(9); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset10"
+		, value: "0|0|0|48" // 48: 0
+		, hotkey: true
+		, label: "Load Preset 10"
+		, hint: "If the current live camera is PTZ, loads preset 10."
+		, actionDown: function () { BI_Hotkey_PtzPreset(10); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset11"
+		, value: "1|0|0|49" // 49: 1
+		, hotkey: true
+		, label: "Load Preset 11"
+		, hint: "If the current live camera is PTZ, loads preset 11."
+		, actionDown: function () { BI_Hotkey_PtzPreset(11); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset12"
+		, value: "1|0|0|50" // 50: 2
+		, hotkey: true
+		, label: "Load Preset 12"
+		, hint: "If the current live camera is PTZ, loads preset 12."
+		, actionDown: function () { BI_Hotkey_PtzPreset(12); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset13"
+		, value: "1|0|0|51" // 51: 3
+		, hotkey: true
+		, label: "Load Preset 13"
+		, hint: "If the current live camera is PTZ, loads preset 13."
+		, actionDown: function () { BI_Hotkey_PtzPreset(13); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset14"
+		, value: "1|0|0|52" // 52: 4
+		, hotkey: true
+		, label: "Load Preset 14"
+		, hint: "If the current live camera is PTZ, loads preset 14."
+		, actionDown: function () { BI_Hotkey_PtzPreset(14); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset15"
+		, value: "1|0|0|53" // 53: 5
+		, hotkey: true
+		, label: "Load Preset 15"
+		, hint: "If the current live camera is PTZ, loads preset 15."
+		, actionDown: function () { BI_Hotkey_PtzPreset(15); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset16"
+		, value: "1|0|0|54" // 54: 6
+		, hotkey: true
+		, label: "Load Preset 16"
+		, hint: "If the current live camera is PTZ, loads preset 16."
+		, actionDown: function () { BI_Hotkey_PtzPreset(16); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset17"
+		, value: "1|0|0|55" // 55: 7
+		, hotkey: true
+		, label: "Load Preset 17"
+		, hint: "If the current live camera is PTZ, loads preset 17."
+		, actionDown: function () { BI_Hotkey_PtzPreset(17); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset18"
+		, value: "1|0|0|56" // 56: 8
+		, hotkey: true
+		, label: "Load Preset 18"
+		, hint: "If the current live camera is PTZ, loads preset 18."
+		, actionDown: function () { BI_Hotkey_PtzPreset(18); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset19"
+		, value: "1|0|0|57" // 57: 9
+		, hotkey: true
+		, label: "Load Preset 19"
+		, hint: "If the current live camera is PTZ, loads preset 19."
+		, actionDown: function () { BI_Hotkey_PtzPreset(19); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset20"
+		, value: "1|0|0|48" // 48: 0
+		, hotkey: true
+		, label: "Load Preset 20"
+		, hint: "If the current live camera is PTZ, loads preset 20."
+		, actionDown: function () { BI_Hotkey_PtzPreset(20); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset21"
+		, value: "0|0|1|49" // 49: 1
+		, hotkey: true
+		, label: "Load Preset 21"
+		, hint: "If the current live camera is PTZ, loads preset 1."
+		, actionDown: function () { BI_Hotkey_PtzPreset(21); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset22"
+		, value: "0|0|1|50" // 50: 2
+		, hotkey: true
+		, label: "Load Preset 22"
+		, hint: "If the current live camera is PTZ, loads preset 22."
+		, actionDown: function () { BI_Hotkey_PtzPreset(22); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset23"
+		, value: "0|0|1|51" // 51: 3
+		, hotkey: true
+		, label: "Load Preset 23"
+		, hint: "If the current live camera is PTZ, loads preset 23."
+		, actionDown: function () { BI_Hotkey_PtzPreset(23); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset24"
+		, value: "0|0|1|52" // 52: 4
+		, hotkey: true
+		, label: "Load Preset 24"
+		, hint: "If the current live camera is PTZ, loads preset 24."
+		, actionDown: function () { BI_Hotkey_PtzPreset(24); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset25"
+		, value: "0|0|1|53" // 53: 5
+		, hotkey: true
+		, label: "Load Preset 25"
+		, hint: "If the current live camera is PTZ, loads preset 25."
+		, actionDown: function () { BI_Hotkey_PtzPreset(25); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset26"
+		, value: "0|0|1|54" // 54: 6
+		, hotkey: true
+		, label: "Load Preset 26"
+		, hint: "If the current live camera is PTZ, loads preset 26."
+		, actionDown: function () { BI_Hotkey_PtzPreset(26); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset27"
+		, value: "0|0|1|55" // 55: 7
+		, hotkey: true
+		, label: "Load Preset 27"
+		, hint: "If the current live camera is PTZ, loads preset 27."
+		, actionDown: function () { BI_Hotkey_PtzPreset(27); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset28"
+		, value: "0|0|1|56" // 56: 8
+		, hotkey: true
+		, label: "Load Preset 28"
+		, hint: "If the current live camera is PTZ, loads preset 28."
+		, actionDown: function () { BI_Hotkey_PtzPreset(28); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset29"
+		, value: "0|0|1|57" // 57: 9
+		, hotkey: true
+		, label: "Load Preset 29"
+		, hint: "If the current live camera is PTZ, loads preset 29."
+		, actionDown: function () { BI_Hotkey_PtzPreset(29); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset30"
+		, value: "0|0|1|48" // 48: 0
+		, hotkey: true
+		, label: "Load Preset 30"
+		, hint: "If the current live camera is PTZ, loads preset 30."
+		, actionDown: function () { BI_Hotkey_PtzPreset(30); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset31"
+		, value: "1|0|1|49" // 49: 1
+		, hotkey: true
+		, label: "Load Preset 31"
+		, hint: "If the current live camera is PTZ, loads preset 31."
+		, actionDown: function () { BI_Hotkey_PtzPreset(31); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset32"
+		, value: "1|0|1|50" // 50: 2
+		, hotkey: true
+		, label: "Load Preset 32"
+		, hint: "If the current live camera is PTZ, loads preset 32."
+		, actionDown: function () { BI_Hotkey_PtzPreset(32); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset33"
+		, value: "1|0|1|51" // 51: 3
+		, hotkey: true
+		, label: "Load Preset 33"
+		, hint: "If the current live camera is PTZ, loads preset 33."
+		, actionDown: function () { BI_Hotkey_PtzPreset(33); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset34"
+		, value: "1|0|1|52" // 52: 4
+		, hotkey: true
+		, label: "Load Preset 34"
+		, hint: "If the current live camera is PTZ, loads preset 34."
+		, actionDown: function () { BI_Hotkey_PtzPreset(34); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset35"
+		, value: "1|0|1|53" // 53: 5
+		, hotkey: true
+		, label: "Load Preset 35"
+		, hint: "If the current live camera is PTZ, loads preset 35."
+		, actionDown: function () { BI_Hotkey_PtzPreset(35); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset36"
+		, value: "1|0|1|54" // 54: 6
+		, hotkey: true
+		, label: "Load Preset 36"
+		, hint: "If the current live camera is PTZ, loads preset 36."
+		, actionDown: function () { BI_Hotkey_PtzPreset(36); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset37"
+		, value: "1|0|1|55" // 55: 7
+		, hotkey: true
+		, label: "Load Preset 37"
+		, hint: "If the current live camera is PTZ, loads preset 37."
+		, actionDown: function () { BI_Hotkey_PtzPreset(37); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset38"
+		, value: "1|0|1|56" // 56: 8
+		, hotkey: true
+		, label: "Load Preset 38"
+		, hint: "If the current live camera is PTZ, loads preset 38."
+		, actionDown: function () { BI_Hotkey_PtzPreset(38); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset39"
+		, value: "1|0|1|57" // 57: 9
+		, hotkey: true
+		, label: "Load Preset 39"
+		, hint: "If the current live camera is PTZ, loads preset 39."
+		, actionDown: function () { BI_Hotkey_PtzPreset(39); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_hotkey_ptzPreset40"
+		, value: "1|0|1|48" // 48: 0
+		, hotkey: true
+		, label: "Load Preset 40"
+		, hint: "If the current live camera is PTZ, loads preset 40."
+		, actionDown: function () { BI_Hotkey_PtzPreset(40); }
+		, category: "Hotkeys"
+	}
+		, {
+		key: "ui3_cameraLabels_enabled"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Camera Labels Enabled'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_multiCameras"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Label multi-camera streams'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_singleCameras"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Label single-camera streams'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_text"
+		, value: CameraLabelTextValues.Name
+		, inputType: "select"
+		, options: [CameraLabelTextValues.Name, CameraLabelTextValues.ShortName, CameraLabelTextValues.Both]
+		, label: "Label Text"
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_position"
+		, value: CameraLabelPositionValues.Top
+		, inputType: "select"
+		, options: [CameraLabelPositionValues.Above, CameraLabelPositionValues.Top, CameraLabelPositionValues.Bottom, CameraLabelPositionValues.Below]
+		, label: "Label Position"
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_fontSize"
+		, value: 10
+		, inputType: "number"
+		, minValue: 0
+		, maxValue: 128
+		, label: "Font Size"
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_minimumFontSize"
+		, value: 6
+		, inputType: "number"
+		, minValue: 0
+		, maxValue: 128
+		, label: "Min Font Size"
+		, hint: "When a group view is rendered smaller than native resolution, font size is scaled down no smaller than this."
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_backgroundColor"
+		, value: "#000000"
+		, inputType: "color"
+		, label: 'Background Color'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_textColor"
+		, value: "#FFFFFF"
+		, inputType: "color"
+		, label: 'Text Color'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_cameraColor"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Use Camera Color<div class="settingDesc">(ignore colors set above)</div>'
+		, onChange: onui3_cameraLabelsChanged
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_backgroundOpacity"
+		, value: 100
+		, minValue: 0
+		, maxValue: 100
+		, step: 1
+		, unitLabel: "%"
+		, inputType: "range"
+		, label: 'Background Opacity'
+		, onChange: onui3_cameraLabelsChanged
+		, changeOnStep: true
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_cameraLabels_textOpacity"
+		, value: 100
+		, minValue: 0
+		, maxValue: 100
+		, step: 1
+		, unitLabel: "%"
+		, inputType: "range"
+		, label: 'Text Opacity'
+		, onChange: onui3_cameraLabelsChanged
+		, changeOnStep: true
+		, category: "Camera Labels"
+	}
+		, {
+		key: "ui3_wheelZoomMethod"
+		, value: "Adjustable"
+		, inputType: "select"
+		, options: ["Adjustable", "Legacy"]
+		, label: "Digital Zoom Method"
+		, onChange: OnChange_ui3_wheelZoomMethod
+		, category: "Digital Zoom"
+	}
+		, {
+		key: "ui3_wheelAdjustableSpeed"
+		, value: 400
+		, minValue: 0
+		, maxValue: 2000
+		, step: 1
+		, inputType: "range"
+		, label: 'Digital Zoom Speed<br/>(Requires zoom method "Adjustable")'
+		, changeOnStep: true
+		, hint: "Default: 400"
+		, category: "Digital Zoom"
+	}
+		, {
+		key: "ui3_wheelZoomReverse"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Reverse Mouse Wheel Zoom'
+		, hint: "By default, UI3 follows the de-facto standard for mouse wheel zoom, where up zooms in."
+		, category: "Digital Zoom"
+	}
+		, {
+		key: "ui3_zoom1x_mode"
+		, value: Zoom1xOptions.Camera
+		, inputType: "select"
+		, options: [Zoom1xOptions.Camera, Zoom1xOptions.Stream]
+		, label: 'At 1x zoom, match resolution of: '
+		, hint: 'Choose "' + Zoom1xOptions.Stream + '" if clip playback has the wrong aspect ratio.'
+		, category: "Digital Zoom"
+	}
+		, {
+		key: "ui3_fullscreen_videoonly"
+		, value: "1"
+		, inputType: "checkbox"
+		, label: 'Maximize Video in Full Screen Mode'
+		, hint: 'If "yes", toggling Full Screen mode automatically toggles the video player\'s maximize state.'
+		, onChange: OnChange_ui3_fullscreen_videoonly
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_show_maximize_button"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Always Show Maximize Button<div class="settingDesc">by Full Screen button</div>'
+		, hint: 'If "no", the Maximize button only appears while the video player is maximized, to allow you to un-maximize.'
+		, onChange: OnChange_ui3_show_maximize_button
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_is_maximized"
+		, value: "0"
+	}
+		, {
+		key: "ui3_ir_brightness_contrast"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'PTZ: IR, Brightness, Contrast<br><a href="javascript:UIHelp.LearnMore(\'IR Brightness Contrast\')">(learn more)</a>'
+		, onChange: OnChange_ui3_ir_brightness_contrast
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_ptzPresetShowCount"
+		, value: "20"
+		, inputType: "select"
+		, options: ["0", "10", "20", "30", "40"]
+		, label: 'PTZ Preset Count'
+		, onChange: OnChange_ui3_ptzPresetShowCount
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_show_cameras_in_group_dropdowns"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Show Cameras in Group Dropdowns'
+		, hint: 'If enabled, the "Current Group" and "Filter by" dropdown lists will include individual cameras.'
+		, onChange: OnChange_ui3_show_cameras_in_group_dropdowns
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_show_session_success"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Show Session Status at Startup'
+		, hint: 'If enabled, session status is shown in the lower-right corner when the UI loads.'
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_bypass_single_camera_groups"
+		, value: "0"
+		, inputType: "checkbox"
+		, label: 'Bypass Single-Camera Groups<div class="settingDesc">(enable this if you have trouble with PTZ controls; disable this if you want to configure a group with only one visible camera)</div>'
+		, onChange: OnChange_ui3_bypass_single_camera_groups
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_contextMenus_trigger"
+		, value: "Right-Click"
+		, options: ["Right-Click", "Long-Press", "Double-Click"]
+		, inputType: "select"
+		, label: 'Context Menu Trigger<br><a href="javascript:UIHelp.LearnMore(\'Context Menu Trigger\')">(learn more)</a>'
+		, onChange: OnChange_ui3_contextMenus_trigger
+		, category: "Extra"
+	}
+		, {
+		key: "ui3_system_name_button"
+		, value: "About This UI"
+		, inputType: "select"
+		, options: []
+		, getOptions: getSystemNameButtonOptions
+		, label: 'System Name Button Action'
+		, hint: 'This action occurs when you click the system name in the upper left.'
+		, onChange: setSystemNameButtonState
+		, category: "Extra"
+	}
 	];
 
 var obsoleteSettings = { ui3_openFirstRecording: true, ui3_contextMenus_longPress: true };
@@ -3604,108 +3600,108 @@ function StatusBars()
 	};
 }
 var ProgressBar =
-{
-	initialize: function ($ele)
 	{
-		if ($ele.children().length == 0)
+		initialize: function ($ele)
+		{
+			if ($ele.children().length == 0)
+			{
+				var ele = $ele.get(0);
+				ele.$progressBarInner = $('<div class="progressBarInner"></div>');
+				$ele.append(ele.$progressBarInner);
+				$ele.addClass("progressBarOuter");
+				ele.defaultColor = ele.$progressBarInner.css("background-color");
+				ele.defaultBackgroundColor = $ele.css("background-color");
+			}
+		}
+		, setProgress: function ($ele, progressAmount)
 		{
 			var ele = $ele.get(0);
-			ele.$progressBarInner = $('<div class="progressBarInner"></div>');
-			$ele.append(ele.$progressBarInner);
-			$ele.addClass("progressBarOuter");
-			ele.defaultColor = ele.$progressBarInner.css("background-color");
-			ele.defaultBackgroundColor = $ele.css("background-color");
+			progressAmount = Clamp(progressAmount, 0, 1);
+			var changed = typeof ele.pbValue == "undefined" || ele.pbValue != progressAmount;
+			ele.pbValue = progressAmount;
+			if (changed)
+				ele.$progressBarInner.css("width", (progressAmount * 100) + "%");
+			if (typeof ele.moveDragHandleElements == "function")
+				ele.moveDragHandleElements();
+			if (changed && typeof ele.onProgressChanged == "function")
+				ele.onProgressChanged(progressAmount);
 		}
-	}
-	, setProgress: function ($ele, progressAmount)
-	{
-		var ele = $ele.get(0);
-		progressAmount = Clamp(progressAmount, 0, 1);
-		var changed = typeof ele.pbValue == "undefined" || ele.pbValue != progressAmount;
-		ele.pbValue = progressAmount;
-		if (changed)
-			ele.$progressBarInner.css("width", (progressAmount * 100) + "%");
-		if (typeof ele.moveDragHandleElements == "function")
-			ele.moveDragHandleElements();
-		if (changed && typeof ele.onProgressChanged == "function")
-			ele.onProgressChanged(progressAmount);
-	}
-	, addDragHandle: function ($ele, onDrag)
-	{
-		$ele.addClass("withDragHandle");
-		var ele = $ele.get(0);
-		ele.$dragHandle = $('<div class="statusBarDragHandle"><div class="statusBarDragHandleInner"></div></div>');
-		var dragHandleWidth = ele.$dragHandle.width();
-		$ele.prepend(ele.$dragHandle);
+		, addDragHandle: function ($ele, onDrag)
+		{
+			$ele.addClass("withDragHandle");
+			var ele = $ele.get(0);
+			ele.$dragHandle = $('<div class="statusBarDragHandle"><div class="statusBarDragHandleInner"></div></div>');
+			var dragHandleWidth = ele.$dragHandle.width();
+			$ele.prepend(ele.$dragHandle);
 
-		ele.onDragHandleDragged = function (mouseX)
-		{
-			var relX = mouseX - $ele.offset().left;
-			var progressPercentage = Clamp(relX / $ele.width(), 0, 1);
-			onDrag(progressPercentage);
-		};
-		ele.moveDragHandleElements = function ()
-		{
-			ele.$dragHandle.css("left", (ele.pbValue * $ele.width()) - (ele.$dragHandle.width() / 2) + "px");
-		};
-		ele.moveDragHandleElements();
-		BI_CustomEvent.AddListener("afterResize", ele.moveDragHandleElements);
-
-		// Set up input events
-		$ele.on("mousedown touchstart", function (e)
-		{
-			mouseCoordFixer.fix(e);
-			if (e.which != 3)
+			ele.onDragHandleDragged = function (mouseX)
 			{
-				if ($ele.hasClass("disabled"))
-					return;
-				ele.isDragging = true;
-				ele.onDragHandleDragged(e.mouseX);
+				var relX = mouseX - $ele.offset().left;
+				var progressPercentage = Clamp(relX / $ele.width(), 0, 1);
+				onDrag(progressPercentage);
+			};
+			ele.moveDragHandleElements = function ()
+			{
+				ele.$dragHandle.css("left", (ele.pbValue * $ele.width()) - (ele.$dragHandle.width() / 2) + "px");
+			};
+			ele.moveDragHandleElements();
+			BI_CustomEvent.AddListener("afterResize", ele.moveDragHandleElements);
+
+			// Set up input events
+			$ele.on("mousedown touchstart", function (e)
+			{
+				mouseCoordFixer.fix(e);
+				if (e.which != 3)
+				{
+					if ($ele.hasClass("disabled"))
+						return;
+					ele.isDragging = true;
+					ele.onDragHandleDragged(e.mouseX);
+				}
+			});
+			$(document).on("mouseup touchend touchcancel", function (e)
+			{
+				mouseCoordFixer.fix(e);
+				ele.isDragging = false;
+			});
+			$(document).on("mousemove touchmove", function (e)
+			{
+				mouseCoordFixer.fix(e);
+				if (ele.isDragging)
+					ele.onDragHandleDragged(e.mouseX);
+			});
+		}
+		, getValue: function ($ele)
+		{
+			return $ele.get(0).pbValue;
+		}
+		, addOnProgressChangedListener: function ($ele, onProgressChanged)
+		{
+			$ele.get(0).onProgressChanged = onProgressChanged;
+		}
+		, setColor: function ($ele, progressColor, progressBackgroundColor)
+		{
+			if (progressColor)
+			{
+				if (progressColor == "default")
+					progressColor = $ele.get(0).defaultColor;
+				$ele.get(0).$progressBarInner.css("background-color", progressColor);
 			}
-		});
-		$(document).on("mouseup touchend touchcancel", function (e)
-		{
-			mouseCoordFixer.fix(e);
-			ele.isDragging = false;
-		});
-		$(document).on("mousemove touchmove", function (e)
-		{
-			mouseCoordFixer.fix(e);
-			if (ele.isDragging)
-				ele.onDragHandleDragged(e.mouseX);
-		});
-	}
-	, getValue: function ($ele)
-	{
-		return $ele.get(0).pbValue;
-	}
-	, addOnProgressChangedListener: function ($ele, onProgressChanged)
-	{
-		$ele.get(0).onProgressChanged = onProgressChanged;
-	}
-	, setColor: function ($ele, progressColor, progressBackgroundColor)
-	{
-		if (progressColor)
-		{
-			if (progressColor == "default")
-				progressColor = $ele.get(0).defaultColor;
-			$ele.get(0).$progressBarInner.css("background-color", progressColor);
+			if (progressBackgroundColor)
+			{
+				if (progressBackgroundColor == "default")
+					progressBackgroundColor = $ele.get(0).Background;
+				$ele.css("background-color", progressBackgroundColor);
+			}
 		}
-		if (progressBackgroundColor)
+		, setEnabled: function ($ele, enabled)
 		{
-			if (progressBackgroundColor == "default")
-				progressBackgroundColor = $ele.get(0).Background;
-			$ele.css("background-color", progressBackgroundColor);
+			if (enabled)
+				$ele.removeClass("disabled");
+			else
+				$ele.addClass("disabled");
 		}
-	}
-	, setEnabled: function ($ele, enabled)
-	{
-		if (enabled)
-			$ele.removeClass("disabled");
-		else
-			$ele.addClass("disabled");
-	}
-};
+	};
 ///////////////////////////////////////////////////////////////
 // Dropdown Boxes /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -3800,9 +3796,6 @@ function DropdownBoxes()
 		{
 			onItemClick: function (item)
 			{
-				if (currentPrimaryTab === "timeline") {
-					loadTimeline(item.id);
-				}
 				if (item.isGroupOrCycle)
 					videoPlayer.SelectCameraGroup(item.id);
 				else
@@ -6409,7 +6402,7 @@ function SeekBar()
 				loadSeekHintImg(time, clip);
 			} else
 				seekHintInfo.queuedMsec = time;
-				seekHintInfo.queuedClip = clip;
+			seekHintInfo.queuedClip = clip;
 		}
 		else
 		{
@@ -7327,198 +7320,198 @@ function ClipLoader(clipsBodySelector)
 		var isClipListRequest = args.cmd === "cliplist"; // We can't rely on this anymore to tell us if response items are clips or alerts.
 
 		ExecJSON(args, function (response)
-		{
-			failedLoadToast.hide();
-			recoveryFunction = null;
-			if (response.result !== "success")
 			{
-				var failMessage = $('<div class="clipListText clipListFailed">Failed to load. Click to learn more.</div>');
-				var reason = args.cmd + ' response did not indicate "success" result: ' + JSON.stringify(response);
-				failMessage.on('click', function ()
+				failedLoadToast.hide();
+				recoveryFunction = null;
+				if (response.result !== "success")
 				{
-					ShowErrorDialog(reason);
-				});
-				$clipsbody.empty();
-				$clipsbody.append(failMessage);
-				return;
-			}
-			failedClipListLoads = 0;
-			var clipTileHeight = getClipTileHeight();
-			var previouslyOpenedClip = null;
-			var loadingImage = videoPlayer.Loading().image;
-			if (typeof response.data !== "undefined")
-			{
-				var newUpdateClipIds = [];
-				var newUpdateClips = [];
-				for (var clipIdx = 0; clipIdx < response.data.length; clipIdx++)
+					var failMessage = $('<div class="clipListText clipListFailed">Failed to load. Click to learn more.</div>');
+					var reason = args.cmd + ' response did not indicate "success" result: ' + JSON.stringify(response);
+					failMessage.on('click', function ()
+					{
+						ShowErrorDialog(reason);
+					});
+					$clipsbody.empty();
+					$clipsbody.append(failMessage);
+					return;
+				}
+				failedClipListLoads = 0;
+				var clipTileHeight = getClipTileHeight();
+				var previouslyOpenedClip = null;
+				var loadingImage = videoPlayer.Loading().image;
+				if (typeof response.data !== "undefined")
 				{
-					// clip.camera : "shortname"
-					// clip.path : "@0000123.bvr"
-					// clip.offset : 0
-					// clip.date : 12345
-					// clip.color : 8151097
-					// clip.flags : 128
-					// clip.msec : 6261
-					// clip.filesize : "10sec (3.09M)"
-					// clip.filetype : "bvr H264 New"
-
-					var clip = response.data[clipIdx];
-					if (newestClipDate < clip.date)
-						newestClipDate = clip.date;
-					var clipData = new ClipData(clip);
-
-					if (!clipData.isClip)
+					var newUpdateClipIds = [];
+					var newUpdateClips = [];
+					for (var clipIdx = 0; clipIdx < response.data.length; clipIdx++)
 					{
-						if (clip.newalerttime)
-							newAlertTimes[clipData.camera] = parseInt(clip.newalerttime);
-					}
-					if (!clipListCache[clipData.camera])
-						clipListCache[clipData.camera] = new Object();
-					var existingClipData = clipListCache[clipData.camera][clipData.recId];
+						// clip.camera : "shortname"
+						// clip.path : "@0000123.bvr"
+						// clip.offset : 0
+						// clip.date : 12345
+						// clip.color : 8151097
+						// clip.flags : 128
+						// clip.msec : 6261
+						// clip.filesize : "10sec (3.09M)"
+						// clip.filetype : "bvr H264 New"
 
-					if (!isSameDay(previousClipDate, clipData.displayDate))
-					{
-						if (previousClipDate.getTime() == 0)
-							$clipListTopDate.attr("defaultStr", GetDateDisplayStr(clipData.displayDate, true)); // Do not add the first date tile because it is redundant with a date display above the list.
-						else
+						var clip = response.data[clipIdx];
+						if (newestClipDate < clip.date)
+							newestClipDate = clip.date;
+						var clipData = new ClipData(clip);
+
+						if (!clipData.isClip)
 						{
-							if (isUpdateOfExistingList)
+							if (clip.newalerttime)
+								newAlertTimes[clipData.camera] = parseInt(clip.newalerttime);
+						}
+						if (!clipListCache[clipData.camera])
+							clipListCache[clipData.camera] = new Object();
+						var existingClipData = clipListCache[clipData.camera][clipData.recId];
+
+						if (!isSameDay(previousClipDate, clipData.displayDate))
+						{
+							if (previousClipDate.getTime() == 0)
+								$clipListTopDate.attr("defaultStr", GetDateDisplayStr(clipData.displayDate, true)); // Do not add the first date tile because it is redundant with a date display above the list.
+							else
 							{
-								if (!existingClipData)
+								if (isUpdateOfExistingList)
 								{
-									// This adds the appropriate date tile if a day boundary is found within a background update.
-									newUpdateClips.push({ isDateTile: true, date: clipData.displayDate });
+									if (!existingClipData)
+									{
+										// This adds the appropriate date tile if a day boundary is found within a background update.
+										newUpdateClips.push({ isDateTile: true, date: clipData.displayDate });
+										TotalDateTilesLoaded++;
+									}
+								}
+								else
+								{
+									tileLoader.registerOnAppearDisappear({ isDateTile: true, date: clipData.displayDate }, DateTileOnAppear, DateTileOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx);
 									TotalDateTilesLoaded++;
 								}
 							}
+						}
+
+						previousClipDate = clipData.displayDate;
+
+						if (existingClipData)
+						{
+							UpdateExistingClipData(existingClipData, clipData);
+						}
+						else // Only register if not already registered
+						{
+							if (isUpdateOfExistingList)
+							{
+								newUpdateClips.push(clipData);
+								newUpdateClipIds.push(clipData.recId);
+							}
 							else
 							{
-								tileLoader.registerOnAppearDisappear({ isDateTile: true, date: clipData.displayDate }, DateTileOnAppear, DateTileOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx);
-								TotalDateTilesLoaded++;
+								loadedClipIds.push(clipData.recId);
+								tileLoader.registerOnAppearDisappear(clipData, ClipOnAppear, ClipOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx);
 							}
+							TotalUniqueClipsLoaded++;
+							clipListCache[clipData.camera][clipData.recId] = clipData;
+							clipListIdCache[clipData.recId] = clipData;
+							if (!isUpdateOfExistingList && previouslyOpenedClip == null && !loadingImage.isLive && loadingImage.uniqueId == clipData.recId)
+								previouslyOpenedClip = clipData;
 						}
 					}
 
-					previousClipDate = clipData.displayDate;
-
-					if (existingClipData)
+					if (isUpdateOfExistingList && newUpdateClipIds.length > 0)
 					{
-						UpdateExistingClipData(existingClipData, clipData);
+						var oldestOfNewClipIds = newUpdateClipIds[newUpdateClipIds.length - 1];
+						if (loadedClipIds.length > 0 && !isSameDay(clipListIdCache[loadedClipIds[0]].displayDate, clipListIdCache[oldestOfNewClipIds].displayDate))
+						{
+							// This adds the appropriate date tile if a day boundary is found between a background update and the previously-loaded clips.
+							newUpdateClips.push({ isDateTile: true, date: clipListIdCache[loadedClipIds[0]].displayDate });
+							TotalDateTilesLoaded++;
+						}
+						loadedClipIds = newUpdateClipIds.concat(loadedClipIds);
+						tileLoader.preserveScrollPosition(clipTileHeight, HeightOfOneDateTilePx, newUpdateClipIds.length);
+						tileLoader.injectNewClips(newUpdateClips, ClipOnAppear, ClipOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx, DateTileOnAppear, DateTileOnDisappear);
+						clipListGrew = true;
 					}
-					else // Only register if not already registered
+
+					if (QueuedClipListLoad != null)
+					{
+						isLoadingAClipList = false;
+						lastClipListLoadedAt = performance.now();
+						QueuedClipListLoad();
+						QueuedClipListLoad = null;
+						return;
+					}
+
+					if (allowContinuation && response.data.length >= 1000)
 					{
 						if (isUpdateOfExistingList)
 						{
-							newUpdateClips.push(clipData);
-							newUpdateClipIds.push(clipData.recId);
+							toaster.Info("Automatic " + (args.cmd === "cliplist" ? "clip list" : "alert list") + " update got too many items.  Refreshing clip list now.", 10000);
+							isLoadingAClipList = false;
+							lastClipListLoadedAt = performance.now();
+							self.LoadClips();
+							return;
 						}
+						for (var i = response.data.length - 1; i >= 0 && i >= response.data.length - 200; i--)
+							if (typeof response.data[i].newalerts === "undefined")
+							{
+								//if (isClipListRequest !== !response.data[i].clip)
+								//	continue; // [flagged hack] The "flagged" view loads both alerts and clips at the same time, so this hack skips the unwanted items.
+								myDateEnd = response.data[i].date;
+								break;
+							}
+						$("#clipListDateRange").html("&nbsp;Remaining to load:<br/>&nbsp;&nbsp;&nbsp;" + parseInt((myDateEnd - myDateStart) / 86400) + " days");
+						$.CustomScroll.callMeOnContainerResize();
+						return loadClipsInternal(cameraId, myDateStart, myDateEnd, true, isUpdateOfExistingList, previousClipDate, dbView);
+					}
+				}
+
+				if (!isUpdateOfExistingList && previouslyOpenedClip == null && startupClipData && !loadingImage.isLive && loadingImage.uniqueId == startupClipData.recId)
+					previouslyOpenedClip = startupClipData;
+
+				isLoadingAClipList = false;
+				lastClipListLoadedAt = performance.now();
+				self.updateNewAlertIcons();
+				if (isUpdateOfExistingList)
+				{
+					if (clipListGrew)
+					{
+						resized();
+						BI_CustomEvent.Invoke("ClipList_Updated", response);
+					}
+				}
+				else
+				{
+					$clipsbody.empty();
+
+					// Force clip list to be the correct height before clip tiles load.
+					$clipsbody.append('<div id="clipListHeightSetter" style="height:' + ((clipTileHeight * TotalUniqueClipsLoaded) + (HeightOfOneDateTilePx * TotalDateTilesLoaded)) + 'px;width:0px;"></div>');
+
+					if (TotalUniqueClipsLoaded == 0)
+					{
+						$clipsbody.append('<div class="clipListText">No recordings were found matching your filters.</div>');
+					}
+					asyncThumbnailDownloader = new AsyncClipThumbnailDownloader();
+					tileLoader.AppearDisappearCheckEnabled = true;
+					tileLoader.appearDisappearCheck();
+
+					if (!loadingImage.isLive && !isUpdateOfExistingList)
+					{
+						if (previouslyOpenedClip == null)
+							self.CloseCurrentClip();
 						else
 						{
-							loadedClipIds.push(clipData.recId);
-							tileLoader.registerOnAppearDisappear(clipData, ClipOnAppear, ClipOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx);
+							// A clip is still playing, and it is in the new list.  Select it and scroll to it.
+							self.SelectClipIdNoOpen(previouslyOpenedClip.recId);
+							self.ScrollClipList(previouslyOpenedClip.y, clipTileHeight);
 						}
-						TotalUniqueClipsLoaded++;
-						clipListCache[clipData.camera][clipData.recId] = clipData;
-						clipListIdCache[clipData.recId] = clipData;
-						if (!isUpdateOfExistingList && previouslyOpenedClip == null && !loadingImage.isLive && loadingImage.uniqueId == clipData.recId)
-							previouslyOpenedClip = clipData;
 					}
-				}
 
-				if (isUpdateOfExistingList && newUpdateClipIds.length > 0)
-				{
-					var oldestOfNewClipIds = newUpdateClipIds[newUpdateClipIds.length - 1];
-					if (loadedClipIds.length > 0 && !isSameDay(clipListIdCache[loadedClipIds[0]].displayDate, clipListIdCache[oldestOfNewClipIds].displayDate))
-					{
-						// This adds the appropriate date tile if a day boundary is found between a background update and the previously-loaded clips.
-						newUpdateClips.push({ isDateTile: true, date: clipListIdCache[loadedClipIds[0]].displayDate });
-						TotalDateTilesLoaded++;
-					}
-					loadedClipIds = newUpdateClipIds.concat(loadedClipIds);
-					tileLoader.preserveScrollPosition(clipTileHeight, HeightOfOneDateTilePx, newUpdateClipIds.length);
-					tileLoader.injectNewClips(newUpdateClips, ClipOnAppear, ClipOnDisappear, TileOnMove, clipTileHeight, HeightOfOneDateTilePx, DateTileOnAppear, DateTileOnDisappear);
-					clipListGrew = true;
-				}
-
-				if (QueuedClipListLoad != null)
-				{
-					isLoadingAClipList = false;
-					lastClipListLoadedAt = performance.now();
-					QueuedClipListLoad();
-					QueuedClipListLoad = null;
-					return;
-				}
-
-				if (allowContinuation && response.data.length >= 1000)
-				{
-					if (isUpdateOfExistingList)
-					{
-						toaster.Info("Automatic " + (args.cmd === "cliplist" ? "clip list" : "alert list") + " update got too many items.  Refreshing clip list now.", 10000);
-						isLoadingAClipList = false;
-						lastClipListLoadedAt = performance.now();
-						self.LoadClips();
-						return;
-					}
-					for (var i = response.data.length - 1; i >= 0 && i >= response.data.length - 200; i--)
-						if (typeof response.data[i].newalerts === "undefined")
-						{
-							//if (isClipListRequest !== !response.data[i].clip)
-							//	continue; // [flagged hack] The "flagged" view loads both alerts and clips at the same time, so this hack skips the unwanted items.
-							myDateEnd = response.data[i].date;
-							break;
-						}
-					$("#clipListDateRange").html("&nbsp;Remaining to load:<br/>&nbsp;&nbsp;&nbsp;" + parseInt((myDateEnd - myDateStart) / 86400) + " days");
 					$.CustomScroll.callMeOnContainerResize();
-					return loadClipsInternal(cameraId, myDateStart, myDateEnd, true, isUpdateOfExistingList, previousClipDate, dbView);
+
+					BI_CustomEvent.Invoke("ClipList_Loaded", response);
 				}
 			}
-
-			if (!isUpdateOfExistingList && previouslyOpenedClip == null && startupClipData && !loadingImage.isLive && loadingImage.uniqueId == startupClipData.recId)
-				previouslyOpenedClip = startupClipData;
-
-			isLoadingAClipList = false;
-			lastClipListLoadedAt = performance.now();
-			self.updateNewAlertIcons();
-			if (isUpdateOfExistingList)
-			{
-				if (clipListGrew)
-				{
-					resized();
-					BI_CustomEvent.Invoke("ClipList_Updated", response);
-				}
-			}
-			else
-			{
-				$clipsbody.empty();
-
-				// Force clip list to be the correct height before clip tiles load.
-				$clipsbody.append('<div id="clipListHeightSetter" style="height:' + ((clipTileHeight * TotalUniqueClipsLoaded) + (HeightOfOneDateTilePx * TotalDateTilesLoaded)) + 'px;width:0px;"></div>');
-
-				if (TotalUniqueClipsLoaded == 0)
-				{
-					$clipsbody.append('<div class="clipListText">No recordings were found matching your filters.</div>');
-				}
-				asyncThumbnailDownloader = new AsyncClipThumbnailDownloader();
-				tileLoader.AppearDisappearCheckEnabled = true;
-				tileLoader.appearDisappearCheck();
-
-				if (!loadingImage.isLive && !isUpdateOfExistingList)
-				{
-					if (previouslyOpenedClip == null)
-						self.CloseCurrentClip();
-					else
-					{
-						// A clip is still playing, and it is in the new list.  Select it and scroll to it.
-						self.SelectClipIdNoOpen(previouslyOpenedClip.recId);
-						self.ScrollClipList(previouslyOpenedClip.y, clipTileHeight);
-					}
-				}
-
-				$.CustomScroll.callMeOnContainerResize();
-
-				BI_CustomEvent.Invoke("ClipList_Loaded", response);
-			}
-		}
 			, function (jqXHR, textStatus, errorThrown)
 			{
 				if (isUpdateOfExistingList)
@@ -8366,27 +8359,27 @@ function ClipLoader(clipsBodySelector)
 		};
 
 		ExecJSON(args, function (response)
-		{
-			if (response.result === "success")
 			{
-				if (options)
+				if (response.result === "success")
 				{
-					if (!options.history)
-						options.history = [];
-					options.history.push(response.data);
+					if (options)
+					{
+						if (!options.history)
+							options.history = [];
+						options.history.push(response.data);
+					}
+					if (typeof onSuccess === "function")
+						onSuccess(response);
 				}
-				if (typeof onSuccess === "function")
-					onSuccess(response);
-			}
-			else
-			{
-				console.log("export command failed:", response);
-				if (response.result === "fail" && response.status)
-					failCallback(response.status);
 				else
-					failCallback("No reason was given for the failure.");
+				{
+					console.log("export command failed:", response);
+					if (response.result === "fail" && response.status)
+						failCallback(response.status);
+					else
+						failCallback("No reason was given for the failure.");
+				}
 			}
-		}
 			, function (jqXHR, textStatus, errorThrown)
 			{
 				console.log("export command failed:", jqXHR.ErrorMessageHtml);
@@ -11646,6 +11639,7 @@ function VideoPlayerController()
 		playbackControls.Live();
 		ptzButtons.UpdatePtzControlDisplayState();
 		dropdownBoxes.setLabelText("currentGroup", CleanUpGroupName(clc.optionDisplay));
+		loadTimeline(clc.optionValue)
 
 		if (clipLoader.GetCurrentFilteredCamera() !== cli.id)
 			clipLoader.LoadClips(); // This method does nothing if not on the clips/alerts tabs.
@@ -12433,9 +12427,9 @@ function JpegVideoModule()
 		else
 		{
 			if ((lastLoadedTimeValue == timeValue
-				&& loading.uniqueId == videoPlayer.Loaded().image.uniqueId
-				&& !CouldBenefitFromSizeChange(sizeToRequest)
-				&& loadedFirstFrame)
+					&& loading.uniqueId == videoPlayer.Loaded().image.uniqueId
+					&& !CouldBenefitFromSizeChange(sizeToRequest)
+					&& loadedFirstFrame)
 				|| !isVisible
 				|| (playbackPaused && loading.isLive) // Live video can be paused since UI3-175
 			)
@@ -13576,7 +13570,7 @@ function OpenH264_Player(frameRendered, PlaybackReachedNaturalEndCB)
 		return netDelayCalc.Calc();
 	}
 	/**
-	 * Returns the number of milliseconds of buffered video frames, calculated as 
+	 * Returns the number of milliseconds of buffered video frames, calculated as
 	 * timestampLastAcceptedFrame - timestampLastRenderedFrame.
 	 * If the system has sufficient computational power, this number should remain close to 0.
 	 */
@@ -13975,9 +13969,9 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 			{
 				videoPlayer.CameraOrResolutionChange();
 			}
-			//else if (message_event.data.startsWith("Received frame "))
-			//{
-			//	console.log(message_event.data);
+				//else if (message_event.data.startsWith("Received frame "))
+				//{
+				//	console.log(message_event.data);
 			//}
 			else
 			{
@@ -16072,8 +16066,6 @@ function LiveVideoPausing()
 
 	BI_CustomEvent.AddListener("Playback_Pause", function (loading)
 	{
-		if (loading.isLive && !playbackPausedToast.isShowing())
-			self.showToast("Live video is paused. Click here to resume.");
 	});
 	BI_CustomEvent.AddListener("Playback_Play", function (loading)
 	{
@@ -16418,8 +16410,8 @@ var inputRequiredOverlay = new (function ()
 // Clip Overlay Configuration /////////////////////////////////
 ///////////////////////////////////////////////////////////////
 /**
-	Provides storage of clip overlay configuration on a per-camera basis.
-	Value 0 indicates "UNSET". 1 indicates "OFF". 2 indicates "ON".
+ Provides storage of clip overlay configuration on a per-camera basis.
+ Value 0 indicates "UNSET". 1 indicates "OFF". 2 indicates "ON".
  */
 function ClipOverlayCfg()
 {
@@ -16523,8 +16515,8 @@ function ClipOverlayCfg()
 // Group Streaming Configuration //////////////////////////////
 ///////////////////////////////////////////////////////////////
 /**
-	Provides storage of group configuration on a per-group basis. Also supports group cycles.
-	For boolean setting overrides, value 0 indicates "UNSET". 1 indicates "OFF". 2 indicates "ON".
+ Provides storage of group configuration on a per-group basis. Also supports group cycles.
+ For boolean setting overrides, value 0 indicates "UNSET". 1 indicates "OFF". 2 indicates "ON".
  */
 function GroupCfg()
 {
@@ -18067,32 +18059,32 @@ function CanvasContextMenu()
 	{
 	}
 	var optionLive =
-	{
-		alias: "cmroot_live", width: 200, items:
-			[
-				{ text: "Open image in new tab", icon: "#svg_mio_Tab", iconClass: "noflip", alias: "opennewtab", action: onLiveContextMenuAction }
-				, { text: '<div id="cmroot_liveview_downloadbutton_findme" style="display:none"></div>Save image to disk', icon: "#svg_x5F_Snapshot", alias: "saveas", action: onLiveContextMenuAction }
-				, { text: "Copy image address", icon: "#svg_mio_copy", iconClass: "noflip", alias: "copyimageaddress", action: onLiveContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "<span id=\"submenu_trigger_groupSettings\">Group Settings</span>", icon: "#svg_mio_apps", iconClass: "noflip", alias: "group_settings_edit", action: onLiveContextMenuAction }
-				, { text: "<span id=\"contextMenuCameraName\">Camera Name</span>", icon: "", alias: "cameraname" }
-				, { type: "splitLine" }
-				, { text: "<span id=\"contextMenuMaximize\">Maximize</span>", icon: "#svg_mio_Fullscreen", iconClass: "noflip", alias: "maximize", action: onLiveContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Trigger Now", icon: "#svg_x5F_Alert1", iconClass: "iconBlue", alias: "trigger", action: onLiveContextMenuAction }
-				, { text: "<span id=\"manRecBtnLabel\">Toggle Recording</span>", icon: "#svg_x5F_Stoplight", iconClass: "iconBlue", alias: "record", tooltip: "Toggle Manual Recording", action: onLiveContextMenuAction }
-				, { text: "Snapshot in Blue Iris", icon: "#svg_x5F_Snapshot", iconClass: "iconBlue", alias: "snapshot", tooltip: "Blue Iris will record a snapshot", action: onLiveContextMenuAction }
-				, { text: "Restart Camera", icon: "#svg_x5F_Restart", iconClass: "iconBlue", alias: "restart", action: onLiveContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Stats for nerds", icon: "#svg_x5F_Info", alias: "statsfornerds", action: onLiveContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onLiveContextMenuAction }
-			]
-		, onContextMenu: onTriggerLiveContextMenu
-		, onCancelContextMenu: onCancelLiveContextMenu
-		, onShow: onShowLiveContextMenu
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+		{
+			alias: "cmroot_live", width: 200, items:
+				[
+					{ text: "Open image in new tab", icon: "#svg_mio_Tab", iconClass: "noflip", alias: "opennewtab", action: onLiveContextMenuAction }
+					, { text: '<div id="cmroot_liveview_downloadbutton_findme" style="display:none"></div>Save image to disk', icon: "#svg_x5F_Snapshot", alias: "saveas", action: onLiveContextMenuAction }
+					, { text: "Copy image address", icon: "#svg_mio_copy", iconClass: "noflip", alias: "copyimageaddress", action: onLiveContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "<span id=\"submenu_trigger_groupSettings\">Group Settings</span>", icon: "#svg_mio_apps", iconClass: "noflip", alias: "group_settings_edit", action: onLiveContextMenuAction }
+					, { text: "<span id=\"contextMenuCameraName\">Camera Name</span>", icon: "", alias: "cameraname" }
+					, { type: "splitLine" }
+					, { text: "<span id=\"contextMenuMaximize\">Maximize</span>", icon: "#svg_mio_Fullscreen", iconClass: "noflip", alias: "maximize", action: onLiveContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Trigger Now", icon: "#svg_x5F_Alert1", iconClass: "iconBlue", alias: "trigger", action: onLiveContextMenuAction }
+					, { text: "<span id=\"manRecBtnLabel\">Toggle Recording</span>", icon: "#svg_x5F_Stoplight", iconClass: "iconBlue", alias: "record", tooltip: "Toggle Manual Recording", action: onLiveContextMenuAction }
+					, { text: "Snapshot in Blue Iris", icon: "#svg_x5F_Snapshot", iconClass: "iconBlue", alias: "snapshot", tooltip: "Blue Iris will record a snapshot", action: onLiveContextMenuAction }
+					, { text: "Restart Camera", icon: "#svg_x5F_Restart", iconClass: "iconBlue", alias: "restart", action: onLiveContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Stats for nerds", icon: "#svg_x5F_Info", alias: "statsfornerds", action: onLiveContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onLiveContextMenuAction }
+				]
+			, onContextMenu: onTriggerLiveContextMenu
+			, onCancelContextMenu: onCancelLiveContextMenu
+			, onShow: onShowLiveContextMenu
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 	$("#layoutbody").contextmenu(optionLive);
 	var onShowRecordContextMenu = function (menu)
 	{
@@ -18229,30 +18221,30 @@ function CanvasContextMenu()
 	}
 	// { type: "skip" }
 	var optionRecord =
-	{
-		alias: "cmroot_record", width: 200, items:
-			[
-				{ text: "Open image in new tab", icon: "", alias: "opennewtab", action: onRecordContextMenuAction }
-				, { text: '<div id="cmroot_recordview_downloadbutton_findme" style="display:none"></div>Save image to disk', icon: "#svg_x5F_Snapshot", alias: "saveas", action: onRecordContextMenuAction }
-				, { text: '<span id="cmroot_recordview_downloadclipbutton">Download clip</span>', icon: "#svg_x5F_Download", alias: "downloadclip", action: onRecordContextMenuAction }
-				, { text: 'Convert/export', icon: "#svg_mio_launch", iconClass: "noflip", alias: "convertexport", action: onRecordContextMenuAction }
-				, { text: "Copy image address", icon: "#svg_mio_copy", iconClass: "noflip", alias: "copyimageaddress", action: onRecordContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "<span id=\"contextMenuClipName\">Clip Name</span>", icon: "", alias: "clipname" }
-				, { type: "splitLine" }
-				, ThreeStateMenuItem.Create("motionoverlays", "Motion overlays", onRecordContextMenuAction)
-				, ThreeStateMenuItem.Create("textoverlays", "Text/graphic overlays", onRecordContextMenuAction)
-				, { type: "splitLine" }
-				, { text: "Close Clip", icon: "#svg_x5F_Error", alias: "closeclip", action: onRecordContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Stats for nerds", icon: "#svg_x5F_Info", alias: "statsfornerds", action: onRecordContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onRecordContextMenuAction }
-			]
-		, onContextMenu: onTriggerRecordContextMenu
-		, onShow: onShowRecordContextMenu
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+		{
+			alias: "cmroot_record", width: 200, items:
+				[
+					{ text: "Open image in new tab", icon: "", alias: "opennewtab", action: onRecordContextMenuAction }
+					, { text: '<div id="cmroot_recordview_downloadbutton_findme" style="display:none"></div>Save image to disk', icon: "#svg_x5F_Snapshot", alias: "saveas", action: onRecordContextMenuAction }
+					, { text: '<span id="cmroot_recordview_downloadclipbutton">Download clip</span>', icon: "#svg_x5F_Download", alias: "downloadclip", action: onRecordContextMenuAction }
+					, { text: 'Convert/export', icon: "#svg_mio_launch", iconClass: "noflip", alias: "convertexport", action: onRecordContextMenuAction }
+					, { text: "Copy image address", icon: "#svg_mio_copy", iconClass: "noflip", alias: "copyimageaddress", action: onRecordContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "<span id=\"contextMenuClipName\">Clip Name</span>", icon: "", alias: "clipname" }
+					, { type: "splitLine" }
+					, ThreeStateMenuItem.Create("motionoverlays", "Motion overlays", onRecordContextMenuAction)
+					, ThreeStateMenuItem.Create("textoverlays", "Text/graphic overlays", onRecordContextMenuAction)
+					, { type: "splitLine" }
+					, { text: "Close Clip", icon: "#svg_x5F_Error", alias: "closeclip", action: onRecordContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Stats for nerds", icon: "#svg_x5F_Info", alias: "statsfornerds", action: onRecordContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onRecordContextMenuAction }
+				]
+			, onContextMenu: onTriggerRecordContextMenu
+			, onShow: onShowRecordContextMenu
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 	$("#layoutbody").contextmenu(optionRecord);
 }
 var ThreeStateMenuItem = new (function ()
@@ -18330,16 +18322,16 @@ function CalendarContextMenu()
 		}
 	}
 	var menuOptions =
-	{
-		alias: "cmroot_calendar", width: 200, items:
-			[
-				{ text: "Filter by Date Range", icon: "", alias: "select", action: onContextMenuAction }
-				, { text: "Today Only", icon: "", alias: "today", action: onContextMenuAction }
-				, { text: "Clear Filter", icon: "", alias: "clear", action: onContextMenuAction }
+		{
+			alias: "cmroot_calendar", width: 200, items:
+				[
+					{ text: "Filter by Date Range", icon: "", alias: "select", action: onContextMenuAction }
+					, { text: "Today Only", icon: "", alias: "today", action: onContextMenuAction }
+					, { text: "Clear Filter", icon: "", alias: "clear", action: onContextMenuAction }
 
-			]
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+				]
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 	$("#dateRange").contextmenu(menuOptions);
 }
 ///////////////////////////////////////////////////////////////
@@ -18365,14 +18357,14 @@ function OpenAlertListButtonContextMenu()
 		}
 	}
 	var menuOptions =
-	{
-		alias: "cmroot_open_alert_list_button", width: 160, items:
-			[
-				{ text: "Open Alert List", icon: "#svg_x5F_Alert1", alias: "open", action: onContextMenuAction }
-				, { text: "Clear Counters", icon: "#svg_mio_Trash", iconClass: "noflip", alias: "clear", action: onContextMenuAction }
-			]
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+		{
+			alias: "cmroot_open_alert_list_button", width: 160, items:
+				[
+					{ text: "Open Alert List", icon: "#svg_x5F_Alert1", alias: "open", action: onContextMenuAction }
+					, { text: "Clear Counters", icon: "#svg_mio_Trash", iconClass: "noflip", alias: "clear", action: onContextMenuAction }
+				]
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 	$("#open_alerts_btn").contextmenu(menuOptions);
 }
 ///////////////////////////////////////////////////////////////
@@ -18595,30 +18587,30 @@ function ClipListContextMenu()
 	}
 	// You can use { type: "skip" } as a context menu item, and that item will not be rendered
 	var menuOptions =
-	{
+		{
 
-		alias: "cmroot_cliplist", width: 200, items:
-			[
-				{ text: '<span id="cm_cliplist_flag">Flag</span>', icon: "#svg_x5F_Flag", iconClass: "", alias: "flag", action: onContextMenuAction }
-				, { text: '<span id="cm_cliplist_protect">Protect</span>', icon: "#svg_mio_lock", iconClass: "noflip", alias: "protect", action: onContextMenuAction }
-				, { text: '<span id="cm_cliplist_aiconfirm">(un)Mark as AI-confirmed</span>', icon: "#sentry_logo", iconClass: "noflip", alias: "aiconfirm", action: onContextMenuAction }
-				, { text: '<span id="cm_cliplist_download">Download</span>', icon: "#svg_x5F_Download", alias: "download", action: onContextMenuAction }
-				, (addDeleteItem
+			alias: "cmroot_cliplist", width: 200, items:
+				[
+					{ text: '<span id="cm_cliplist_flag">Flag</span>', icon: "#svg_x5F_Flag", iconClass: "", alias: "flag", action: onContextMenuAction }
+					, { text: '<span id="cm_cliplist_protect">Protect</span>', icon: "#svg_mio_lock", iconClass: "noflip", alias: "protect", action: onContextMenuAction }
+					, { text: '<span id="cm_cliplist_aiconfirm">(un)Mark as AI-confirmed</span>', icon: "#sentry_logo", iconClass: "noflip", alias: "aiconfirm", action: onContextMenuAction }
+					, { text: '<span id="cm_cliplist_download">Download</span>', icon: "#svg_x5F_Download", alias: "download", action: onContextMenuAction }
+					, (addDeleteItem
 					? { text: '<span id="cm_cliplist_delete">Delete</span>', icon: "#svg_mio_Trash", iconClass: "noflip", alias: "delete", action: onContextMenuAction }
 					: { type: "skip" })
-				, { type: "splitLine" }
-				, { text: '<span id="cm_cliplist_larger_thumbnails">Enlarge Thumbnails</span>', icon: "#svg_mio_imageLarger", iconClass: "noflip", alias: "larger_thumbnails", action: onContextMenuAction }
-				, { text: '<span id="cm_cliplist_mouseover_thumbnails">Enlarge Thumbnails</span>', icon: "#svg_mio_popout", iconClass: "noflip rotate270", alias: "mouseover_thumbnails", action: onContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Convert/export", icon: "#svg_mio_launch", iconClass: "noflip", alias: "convertexport", action: onContextMenuAction }
-				, { type: "splitLine" }
-				, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onContextMenuAction }
+					, { type: "splitLine" }
+					, { text: '<span id="cm_cliplist_larger_thumbnails">Enlarge Thumbnails</span>', icon: "#svg_mio_imageLarger", iconClass: "noflip", alias: "larger_thumbnails", action: onContextMenuAction }
+					, { text: '<span id="cm_cliplist_mouseover_thumbnails">Enlarge Thumbnails</span>', icon: "#svg_mio_popout", iconClass: "noflip rotate270", alias: "mouseover_thumbnails", action: onContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Convert/export", icon: "#svg_mio_launch", iconClass: "noflip", alias: "convertexport", action: onContextMenuAction }
+					, { type: "splitLine" }
+					, { text: "Properties", icon: "#svg_x5F_Viewdetails", alias: "properties", action: onContextMenuAction }
 
-			]
-		, clickType: GetPreferredContextMenuTrigger()
-		, onContextMenu: onTriggerContextMenu
-		, onShow: onShowMenu
-	};
+				]
+			, clickType: GetPreferredContextMenuTrigger()
+			, onContextMenu: onTriggerContextMenu
+			, onShow: onShowMenu
+		};
 	this.AttachContextMenu = function ($ele)
 	{
 		$ele.contextmenu(menuOptions);
@@ -18716,14 +18708,14 @@ function ContextMenu_EnableDisableItem(selector, uniqueSettingsId, itemName, onT
 			menuItemArray.push({ text: '<span id="' + uniqueSettingsId + '_extra_' + i + '">Extra ' + i + '</span>', icon: "", alias: uniqueSettingsId + '_extra_alias_' + i, action: onContextMenuAction });
 		}
 	var menuOptions =
-	{
-		alias: "cmroot_" + uniqueSettingsId
-		, width: "auto"
-		, items: menuItemArray
-		, onContextMenu: onTriggerContextMenu
-		, onShow: onShowContextMenu
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+		{
+			alias: "cmroot_" + uniqueSettingsId
+			, width: "auto"
+			, items: menuItemArray
+			, onContextMenu: onTriggerContextMenu
+			, onShow: onShowContextMenu
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 	$(selector).contextmenu(menuOptions);
 	if (onToggle)
 		onToggle(GetUi3FeatureEnabled(uniqueSettingsId));
@@ -19112,13 +19104,13 @@ function CameraListDialog()
 						sizeArg = "&h=120";
 					var tmpImgSrc = currentServer.remoteBaseURL + "image/" + camId + '?time=' + new Date().getTime() + sizeArg + "&q=50" + currentServer.GetAPISessionArg("&", true);
 					PersistImageFromUrl(settingsKey, tmpImgSrc, function (imgAsDataURL)
-					{
-						settings.setItem(settingsKey + "_date", new Date().getTime())
-						$ele.next('span').hide();
-						$ele.attr("src", imgAsDataURL);
-						$ele.css("display", "block");
-						$ele.parent().parent().find(".camlist_thumb_aligner").css("height", "120px");
-					}
+						{
+							settings.setItem(settingsKey + "_date", new Date().getTime())
+							$ele.next('span').hide();
+							$ele.attr("src", imgAsDataURL);
+							$ele.css("display", "block");
+							$ele.parent().parent().find(".camlist_thumb_aligner").css("height", "120px");
+						}
 						, function (message)
 						{
 							settings.setItem(settingsKey + "_date", new Date().getTime())
@@ -21412,21 +21404,21 @@ function MuLawDecoder()
 {
 	var self = this;
 	var decHelper = [-32124, -31100, -30076, -29052, -28028, -27004, -25980, -24956,
-	-23932, -22908, -21884, -20860, -19836, -18812, -17788, -16764,
-	-15996, -15484, -14972, -14460, -13948, -13436, -12924, -12412,
-	-11900, -11388, -10876, -10364, -9852, -9340, -8828, -8316,
-	-7932, -7676, -7420, -7164, -6908, -6652, -6396, -6140,
-	-5884, -5628, -5372, -5116, -4860, -4604, -4348, -4092,
-	-3900, -3772, -3644, -3516, -3388, -3260, -3132, -3004,
-	-2876, -2748, -2620, -2492, -2364, -2236, -2108, -1980,
-	-1884, -1820, -1756, -1692, -1628, -1564, -1500, -1436,
-	-1372, -1308, -1244, -1180, -1116, -1052, -988, -924,
-	-876, -844, -812, -780, -748, -716, -684, -652,
-	-620, -588, -556, -524, -492, -460, -428, -396,
-	-372, -356, -340, -324, -308, -292, -276, -260,
-	-244, -228, -212, -196, -180, -164, -148, -132,
-	-120, -112, -104, -96, -88, -80, -72, -64,
-	-56, -48, -40, -32, -24, -16, -8, -1,
+		-23932, -22908, -21884, -20860, -19836, -18812, -17788, -16764,
+		-15996, -15484, -14972, -14460, -13948, -13436, -12924, -12412,
+		-11900, -11388, -10876, -10364, -9852, -9340, -8828, -8316,
+		-7932, -7676, -7420, -7164, -6908, -6652, -6396, -6140,
+		-5884, -5628, -5372, -5116, -4860, -4604, -4348, -4092,
+		-3900, -3772, -3644, -3516, -3388, -3260, -3132, -3004,
+		-2876, -2748, -2620, -2492, -2364, -2236, -2108, -1980,
+		-1884, -1820, -1756, -1692, -1628, -1564, -1500, -1436,
+		-1372, -1308, -1244, -1180, -1116, -1052, -988, -924,
+		-876, -844, -812, -780, -748, -716, -684, -652,
+		-620, -588, -556, -524, -492, -460, -428, -396,
+		-372, -356, -340, -324, -308, -292, -276, -260,
+		-244, -228, -212, -196, -180, -164, -148, -132,
+		-120, -112, -104, -96, -88, -80, -72, -64,
+		-56, -48, -40, -32, -24, -16, -8, -1,
 		32124, 31100, 30076, 29052, 28028, 27004, 25980, 24956,
 		23932, 22908, 21884, 20860, 19836, 18812, 17788, 16764,
 		15996, 15484, 14972, 14460, 13948, 13436, 12924, 12412,
@@ -22078,13 +22070,13 @@ function HLSPlayer()
 		}
 	}
 	var optionHls =
-	{
-		alias: "cmroot_hls", width: 200, items:
-			[
-				{ text: "Open stream in New Tab", icon: "", alias: "newtab", action: onHlsContextMenuAction }
-			]
-		, clickType: GetPreferredContextMenuTrigger()
-	};
+		{
+			alias: "cmroot_hls", width: 200, items:
+				[
+					{ text: "Open stream in New Tab", icon: "", alias: "newtab", action: onHlsContextMenuAction }
+				]
+			, clickType: GetPreferredContextMenuTrigger()
+		};
 
 	var registerHlsContextMenu = function ($ele)
 	{
@@ -22158,7 +22150,7 @@ function MediaSessionController()
 			if (lastSetState == null
 				|| lastSetState.duration !== stateDict.duration
 				|| lastSetState.playbackRate !== stateDict.playbackRate
-				|| lastSetState.position !== stateDict.position) 
+				|| lastSetState.position !== stateDict.position)
 			{
 				try
 				{
@@ -23580,118 +23572,118 @@ function FailLimiter(maxFailsInTimePeriod, timePeriodMs)
 // Incomplete / Placeholder ///////////////////////////////////
 ///////////////////////////////////////////////////////////////
 var currentServer =
-{
-	remoteBaseURL: GetAppPath()
-	, remoteServerName: ""
-	, remoteServerUser: ""
-	, remoteServerPass: ""
-	, isLoggingOut: false
-	, isUsingRemoteServer: false
-	, GetAPISessionArg: function (prefix, forceAddArg)
 	{
-		if (currentServer.isUsingRemoteServer || !navigator.cookieEnabled || forceAddArg)
-			return prefix + "session=" + sessionManager.GetAPISession();
-		return "";
-	}
-	, GetLocalSessionArg: function (prefix, forceAddArg)
-	{
-		if (!navigator.cookieEnabled || forceAddArg)
+		remoteBaseURL: GetAppPath()
+		, remoteServerName: ""
+		, remoteServerUser: ""
+		, remoteServerPass: ""
+		, isLoggingOut: false
+		, isUsingRemoteServer: false
+		, GetAPISessionArg: function (prefix, forceAddArg)
 		{
-			if (sessionManager)
-				return prefix + "session=" + sessionManager.GetLocalSession();
+			if (currentServer.isUsingRemoteServer || !navigator.cookieEnabled || forceAddArg)
+				return prefix + "session=" + sessionManager.GetAPISession();
+			return "";
+		}
+		, GetLocalSessionArg: function (prefix, forceAddArg)
+		{
+			if (!navigator.cookieEnabled || forceAddArg)
+			{
+				if (sessionManager)
+					return prefix + "session=" + sessionManager.GetLocalSession();
+				else
+					toaster.Error("Attempted to access sessionManager before it was initialized.");
+			}
+			return "";
+		}
+		, SetRemoteServer: function (serverName, baseUrl, user, pass)
+		{
+			if (!currentServer.ValidateRemoteServerNameSimpleRules(serverName))
+			{
+				toaster.Error("Unable to validate remote server name. Connecting to local server instead.", 10000);
+				serverName = "";
+			}
+			if (serverName == "")
+			{
+				currentServer.remoteBaseURL = GetAppPath();
+				currentServer.remoteServerName = "";
+				currentServer.remoteServerUser = "";
+				currentServer.remoteServerPass = "";
+				currentServer.isUsingRemoteServer = false;
+			}
 			else
-				toaster.Error("Attempted to access sessionManager before it was initialized.");
+			{
+				currentServer.remoteBaseURL = baseUrl;
+				currentServer.remoteServerName = serverName;
+				currentServer.remoteServerUser = user;
+				currentServer.remoteServerPass = pass;
+				currentServer.isUsingRemoteServer = true;
+			}
 		}
-		return "";
-	}
-	, SetRemoteServer: function (serverName, baseUrl, user, pass)
-	{
-		if (!currentServer.ValidateRemoteServerNameSimpleRules(serverName))
+		, ValidateRemoteServerNameSimpleRules: function (val)
 		{
-			toaster.Error("Unable to validate remote server name. Connecting to local server instead.", 10000);
-			serverName = "";
-		}
-		if (serverName == "")
-		{
-			currentServer.remoteBaseURL = GetAppPath();
-			currentServer.remoteServerName = "";
-			currentServer.remoteServerUser = "";
-			currentServer.remoteServerPass = "";
-			currentServer.isUsingRemoteServer = false;
-		}
-		else
-		{
-			currentServer.remoteBaseURL = baseUrl;
-			currentServer.remoteServerName = serverName;
-			currentServer.remoteServerUser = user;
-			currentServer.remoteServerPass = pass;
-			currentServer.isUsingRemoteServer = true;
-		}
-	}
-	, ValidateRemoteServerNameSimpleRules: function (val)
-	{
-		if (val.length == 0)
-			return false;
-		if (val.length > 16)
-			return false;
-		for (var i = 0; i < val.length; i++)
-		{
-			var c = val.charAt(i);
-			if ((c < "a" || c > "z") && (c < "A" || c > "Z") && (c < "0" || c > "9") && c != " ")
+			if (val.length == 0)
 				return false;
+			if (val.length > 16)
+				return false;
+			for (var i = 0; i < val.length; i++)
+			{
+				var c = val.charAt(i);
+				if ((c < "a" || c > "z") && (c < "A" || c > "Z") && (c < "0" || c > "9") && c != " ")
+					return false;
+			}
+			return true;
 		}
-		return true;
-	}
-};
+	};
 ///////////////////////////////////////////////////////////////
 // Custom Events //////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 var BI_CustomEvent =
-{
-	customEventRegistry: new Object(),
-	AddListener: function (eventName, eventHandler)
 	{
-		if (typeof this.customEventRegistry[eventName] == "undefined")
-			this.customEventRegistry[eventName] = new Array();
-		this.customEventRegistry[eventName].push(eventHandler);
-	},
-	RemoveListener: function (eventName, eventHandler)
-	{
-		if (typeof this.customEventRegistry[eventName] == "undefined")
-			return;
-		var handlers = this.customEventRegistry[eventName];
-		var idx = handlers.indexOf(eventHandler);
-		if (idx > -1)
+		customEventRegistry: new Object(),
+		AddListener: function (eventName, eventHandler)
 		{
-			var handler = handlers[idx];
-			if (handler.isExecutingEventHandlerNow)
-				handler.removeEventHandlerWhenFinished = true;
-			else
-				handlers.splice(idx, 1);
-		}
-	},
-	Invoke: function (eventName, args)
-	{
-		if (typeof this.customEventRegistry[eventName] != "undefined")
-			for (var i = 0; i < this.customEventRegistry[eventName].length; i++)
-				try
-				{
-					var handler = this.customEventRegistry[eventName][i];
-					handler.isExecutingEventHandlerNow = true;
-					handler(args);
-					handler.isExecutingEventHandlerNow = false;
-					if (handler.removeEventHandlerWhenFinished)
+			if (typeof this.customEventRegistry[eventName] == "undefined")
+				this.customEventRegistry[eventName] = new Array();
+			this.customEventRegistry[eventName].push(eventHandler);
+		},
+		RemoveListener: function (eventName, eventHandler)
+		{
+			if (typeof this.customEventRegistry[eventName] == "undefined")
+				return;
+			var handlers = this.customEventRegistry[eventName];
+			var idx = handlers.indexOf(eventHandler);
+			if (idx > -1)
+			{
+				var handler = handlers[idx];
+				if (handler.isExecutingEventHandlerNow)
+					handler.removeEventHandlerWhenFinished = true;
+				else
+					handlers.splice(idx, 1);
+			}
+		},
+		Invoke: function (eventName, args)
+		{
+			if (typeof this.customEventRegistry[eventName] != "undefined")
+				for (var i = 0; i < this.customEventRegistry[eventName].length; i++)
+					try
 					{
-						this.customEventRegistry[eventName].splice(i, 1);
-						i--;
+						var handler = this.customEventRegistry[eventName][i];
+						handler.isExecutingEventHandlerNow = true;
+						handler(args);
+						handler.isExecutingEventHandlerNow = false;
+						if (handler.removeEventHandlerWhenFinished)
+						{
+							this.customEventRegistry[eventName].splice(i, 1);
+							i--;
+						}
 					}
-				}
-				catch (ex)
-				{
-					toaster.Error(ex);
-				}
-	}
-};
+					catch (ex)
+					{
+						toaster.Error(ex);
+					}
+		}
+	};
 ///////////////////////////////////////////////////////////////
 // Session Timeout ////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -24219,7 +24211,7 @@ function FetchVideoH264Streamer(url, frameCallback, statusBlockCallback, streamI
 							toaster.Error(e);
 						}
 					})
-					["catch"](function (e)
+						["catch"](function (e)
 					{
 						CallStreamEnded(e);
 					});
@@ -24295,208 +24287,72 @@ function FetchVideoH264Streamer(url, frameCallback, statusBlockCallback, streamI
 		if (reader == null)
 			return;
 		reader.read().then(function (result)
-		{
-			try
 			{
-				if (result.done)
+				try
 				{
-					CallStreamEnded("fetch graceful exit (type 1)");
-					return;
-				}
-				else if (cancel_streaming)
-				{
-					stopStreaming_Internal();
-					CallStreamEnded("fetch graceful exit (type 2)");
-					return;
-				}
-
-				myStream.Write(result.value);
-
-				while (myStream) // was "while (true)" but eslint doesn't like that.
-				{
-					if (cancel_streaming)
+					if (result.done)
 					{
-						stopStreaming_Internal();
-						CallStreamEnded("fetch graceful exit (type 3)");
+						CallStreamEnded("fetch graceful exit (type 1)");
 						return;
 					}
-					if (state == 0) // Read Stream Header Start
+					else if (cancel_streaming)
 					{
-						var buf = myStream.Read(6);
-						if (buf == null)
-							return pump();
-
-						// First 4 bytes are supposed to be ASCII "blue"
-						if (buf[0] != 98 || buf[1] != 108 || buf[2] != 117 || buf[3] != 101)
-							return protocolError("stream did not start with \"blue\"");
-
-						availableStreams = buf[4];
-						if (availableStreams != 1 && availableStreams != 2)
-							return protocolError("availableStreams (" + availableStreams + ") was supposed to be 1 (video) or 2 (audio+video)");
-
-						streamHeaderSize = buf[5];
-
-						state = 1;
+						stopStreaming_Internal();
+						CallStreamEnded("fetch graceful exit (type 2)");
+						return;
 					}
-					else if (state == 1) // Read Stream Header Remainder
+
+					myStream.Write(result.value);
+
+					while (myStream) // was "while (true)" but eslint doesn't like that.
 					{
-						var buf = myStream.Read(streamHeaderSize);
-						if (buf == null)
-							return pump();
-
-						// Read BITMAPINFOHEADER structure
-						var offsetWrapper = { offset: 0 };
-						var bitmapHeaderSize = ReadUInt32LE(buf, offsetWrapper);
-						offsetWrapper.offset -= 4; // Reverse the previous read so it will be included in the object.
-						if (bitmapHeaderSize > 0)
-							bitmapHeader = new BITMAPINFOHEADER(ReadSubArray(buf, offsetWrapper, bitmapHeaderSize));
-
-						if (offsetWrapper.offset < streamHeaderSize)
-						{
-							// Audio stream was provided.
-							// Assuming the remainder of the header is WAVEFORMATEX structure
-							audioHeader = new WAVEFORMATEX(ReadSubArray(buf, offsetWrapper, streamHeaderSize - offsetWrapper.offset));
-						}
-
-						try
-						{
-							streamInfoCallback(bitmapHeader, audioHeader);
-						}
-						catch (e)
-						{
-							toaster.Error(e);
-						}
-
-						state = 2;
-					}
-					else if (state == 2) // Read Block Header Start
-					{
-						var buf = myStream.Read(5);
-						if (buf == null)
-							return pump();
-
-						// First 4 bytes are supposed to be ASCII "Blue"
-						if (buf[0] != 66 || buf[1] != 108 || buf[2] != 117 || buf[3] != 101)
-							return protocolError("block did not start with \"Blue\"");
-
-						blockType = buf[4];
-
-						state = 3;
-					}
-					else if (state == 3) // Read Block Header Remainder
-					{
-						if (blockType == 0) // Video
-						{
-							var buf = myStream.Read(18); // 2 + 4 + 8 + 4
-							if (buf == null)
-								return pump();
-							var offsetWrapper = { offset: 0 };
-							currentVideoFrame.pos = ReadUInt16(buf, offsetWrapper);
-							currentVideoFrame.rawtime = ReadUInt32(buf, offsetWrapper); // Position of the frame relative to the start of the clip
-							currentVideoFrame.time = currentVideoFrame.rawtime; // After below computation, this will be the playback clock timestamp at which to render the frame.
-							currentVideoFrame.utc = ReadUInt64LE(buf, offsetWrapper);
-							currentVideoFrame.size = ReadUInt32(buf, offsetWrapper);
-
-							{
-								// As of Sept 2020, frame times no longer always start from 0.
-
-								if (baseVideoFrameTime === -1)
-									baseVideoFrameTime = currentVideoFrame.time;
-
-								if (lastVideoFrameTime != -1)
-								{
-									// If time jumped backwards more than one billion milliseconds, assume the UINT32 overflowed to 0.
-									if (lastVideoFrameTime - 1000000000 > currentVideoFrame.time)
-										baseVideoFrameTime -= UINT32_MAX;
-									// If time jumped forward more than one billion milliseconds, assume the UINT32 overflowed to UINT32_MAX.
-									if (lastVideoFrameTime + 1000000000 < currentVideoFrame.time)
-										baseVideoFrameTime += UINT32_MAX;
-								}
-								lastVideoFrameTime = currentVideoFrame.time;
-
-								currentVideoFrame.time -= baseVideoFrameTime;
-								if (playRate !== 0)
-									currentVideoFrame.time = Math.round(currentVideoFrame.time / playRate);
-								currentVideoFrame.time = Math.abs(currentVideoFrame.time);
-							}
-
-
-							if (currentVideoFrame.size > 10000000)
-								return protocolError("Video frame size of " + currentVideoFrame.size + " was rejected.");
-
-							state = 4;
-						}
-						else if (blockType == 1) // Audio
-						{
-							var buf = myStream.Read(4);
-							if (buf == null)
-								return pump();
-
-							currentAudioFrame.size = ReadInt32(buf, { offset: 0 });
-							if (currentAudioFrame.size > 2000000)
-								return protocolError("Audio frame size of " + currentAudioFrame.size + " was rejected.");
-
-							state = 4;
-						}
-						else if (blockType == 2) // Status
-						{
-							var buf = myStream.Read(1);
-							if (buf == null)
-								return pump();
-
-							statusBlockSize = buf[0];
-
-							if (statusBlockSize < 6)
-								return protocolError("Status block size was invalid (" + statusBlockSize + ")!");
-
-							state = 4;
-						}
-						else if (blockType == 4)
+						if (cancel_streaming)
 						{
 							stopStreaming_Internal();
-							CallStreamEnded("natural end of stream", true);
+							CallStreamEnded("fetch graceful exit (type 3)");
 							return;
 						}
-						else
-							return protocolError("Unknown block type " + blockType + " at state " + state);
-					}
-					else if (state == 4) // Read AV frame data
-					{
-						if (blockType == 0) // Video
+						if (state == 0) // Read Stream Header Start
 						{
-							var buf = myStream.Read(currentVideoFrame.size);
+							var buf = myStream.Read(6);
 							if (buf == null)
 								return pump();
 
-							bitRateCalc_Video.AddDataPoint(currentVideoFrame.size);
+							// First 4 bytes are supposed to be ASCII "blue"
+							if (buf[0] != 98 || buf[1] != 108 || buf[2] != 117 || buf[3] != 101)
+								return protocolError("stream did not start with \"blue\"");
 
-							CallFrameCallback(new BIVideoFrame(buf, currentVideoFrame), availableStreams);
+							availableStreams = buf[4];
+							if (availableStreams != 1 && availableStreams != 2)
+								return protocolError("availableStreams (" + availableStreams + ") was supposed to be 1 (video) or 2 (audio+video)");
 
-							state = 2;
+							streamHeaderSize = buf[5];
+
+							state = 1;
 						}
-						else if (blockType == 1) // Audio
+						else if (state == 1) // Read Stream Header Remainder
 						{
-							var buf = myStream.Read(currentAudioFrame.size);
+							var buf = myStream.Read(streamHeaderSize);
 							if (buf == null)
 								return pump();
 
-							bitRateCalc_Audio.AddDataPoint(currentAudioFrame.size);
+							// Read BITMAPINFOHEADER structure
+							var offsetWrapper = { offset: 0 };
+							var bitmapHeaderSize = ReadUInt32LE(buf, offsetWrapper);
+							offsetWrapper.offset -= 4; // Reverse the previous read so it will be included in the object.
+							if (bitmapHeaderSize > 0)
+								bitmapHeader = new BITMAPINFOHEADER(ReadSubArray(buf, offsetWrapper, bitmapHeaderSize));
 
-							CallFrameCallback(new BIAudioFrame(buf, audioHeader), availableStreams);
-
-							state = 2;
-						}
-						else if (blockType == 2) // Status
-						{
-							var buf = myStream.Read(statusBlockSize - 6); // We already read the first 6 bytes ['B', 'L', 'U', 'E', 2, statusBlockSize]
-							if (buf == null)
-								return pump();
-
-							var statusBlock = new StatusBlock(buf);
+							if (offsetWrapper.offset < streamHeaderSize)
+							{
+								// Audio stream was provided.
+								// Assuming the remainder of the header is WAVEFORMATEX structure
+								audioHeader = new WAVEFORMATEX(ReadSubArray(buf, offsetWrapper, streamHeaderSize - offsetWrapper.offset));
+							}
 
 							try
 							{
-								statusBlockCallback(statusBlock);
+								streamInfoCallback(bitmapHeader, audioHeader);
 							}
 							catch (e)
 							{
@@ -24505,16 +24361,152 @@ function FetchVideoH264Streamer(url, frameCallback, statusBlockCallback, streamI
 
 							state = 2;
 						}
-						else
-							return protocolError("Unknown block type " + blockType + " at state " + state);
+						else if (state == 2) // Read Block Header Start
+						{
+							var buf = myStream.Read(5);
+							if (buf == null)
+								return pump();
+
+							// First 4 bytes are supposed to be ASCII "Blue"
+							if (buf[0] != 66 || buf[1] != 108 || buf[2] != 117 || buf[3] != 101)
+								return protocolError("block did not start with \"Blue\"");
+
+							blockType = buf[4];
+
+							state = 3;
+						}
+						else if (state == 3) // Read Block Header Remainder
+						{
+							if (blockType == 0) // Video
+							{
+								var buf = myStream.Read(18); // 2 + 4 + 8 + 4
+								if (buf == null)
+									return pump();
+								var offsetWrapper = { offset: 0 };
+								currentVideoFrame.pos = ReadUInt16(buf, offsetWrapper);
+								currentVideoFrame.rawtime = ReadUInt32(buf, offsetWrapper); // Position of the frame relative to the start of the clip
+								currentVideoFrame.time = currentVideoFrame.rawtime; // After below computation, this will be the playback clock timestamp at which to render the frame.
+								currentVideoFrame.utc = ReadUInt64LE(buf, offsetWrapper);
+								currentVideoFrame.size = ReadUInt32(buf, offsetWrapper);
+
+								{
+									// As of Sept 2020, frame times no longer always start from 0.
+
+									if (baseVideoFrameTime === -1)
+										baseVideoFrameTime = currentVideoFrame.time;
+
+									if (lastVideoFrameTime != -1)
+									{
+										// If time jumped backwards more than one billion milliseconds, assume the UINT32 overflowed to 0.
+										if (lastVideoFrameTime - 1000000000 > currentVideoFrame.time)
+											baseVideoFrameTime -= UINT32_MAX;
+										// If time jumped forward more than one billion milliseconds, assume the UINT32 overflowed to UINT32_MAX.
+										if (lastVideoFrameTime + 1000000000 < currentVideoFrame.time)
+											baseVideoFrameTime += UINT32_MAX;
+									}
+									lastVideoFrameTime = currentVideoFrame.time;
+
+									currentVideoFrame.time -= baseVideoFrameTime;
+									if (playRate !== 0)
+										currentVideoFrame.time = Math.round(currentVideoFrame.time / playRate);
+									currentVideoFrame.time = Math.abs(currentVideoFrame.time);
+								}
+
+
+								if (currentVideoFrame.size > 10000000)
+									return protocolError("Video frame size of " + currentVideoFrame.size + " was rejected.");
+
+								state = 4;
+							}
+							else if (blockType == 1) // Audio
+							{
+								var buf = myStream.Read(4);
+								if (buf == null)
+									return pump();
+
+								currentAudioFrame.size = ReadInt32(buf, { offset: 0 });
+								if (currentAudioFrame.size > 2000000)
+									return protocolError("Audio frame size of " + currentAudioFrame.size + " was rejected.");
+
+								state = 4;
+							}
+							else if (blockType == 2) // Status
+							{
+								var buf = myStream.Read(1);
+								if (buf == null)
+									return pump();
+
+								statusBlockSize = buf[0];
+
+								if (statusBlockSize < 6)
+									return protocolError("Status block size was invalid (" + statusBlockSize + ")!");
+
+								state = 4;
+							}
+							else if (blockType == 4)
+							{
+								stopStreaming_Internal();
+								CallStreamEnded("natural end of stream", true);
+								return;
+							}
+							else
+								return protocolError("Unknown block type " + blockType + " at state " + state);
+						}
+						else if (state == 4) // Read AV frame data
+						{
+							if (blockType == 0) // Video
+							{
+								var buf = myStream.Read(currentVideoFrame.size);
+								if (buf == null)
+									return pump();
+
+								bitRateCalc_Video.AddDataPoint(currentVideoFrame.size);
+
+								CallFrameCallback(new BIVideoFrame(buf, currentVideoFrame), availableStreams);
+
+								state = 2;
+							}
+							else if (blockType == 1) // Audio
+							{
+								var buf = myStream.Read(currentAudioFrame.size);
+								if (buf == null)
+									return pump();
+
+								bitRateCalc_Audio.AddDataPoint(currentAudioFrame.size);
+
+								CallFrameCallback(new BIAudioFrame(buf, audioHeader), availableStreams);
+
+								state = 2;
+							}
+							else if (blockType == 2) // Status
+							{
+								var buf = myStream.Read(statusBlockSize - 6); // We already read the first 6 bytes ['B', 'L', 'U', 'E', 2, statusBlockSize]
+								if (buf == null)
+									return pump();
+
+								var statusBlock = new StatusBlock(buf);
+
+								try
+								{
+									statusBlockCallback(statusBlock);
+								}
+								catch (e)
+								{
+									toaster.Error(e);
+								}
+
+								state = 2;
+							}
+							else
+								return protocolError("Unknown block type " + blockType + " at state " + state);
+						}
 					}
 				}
+				catch (e)
+				{
+					toaster.Error(e);
+				}
 			}
-			catch (e)
-			{
-				toaster.Error(e);
-			}
-		}
 		)["catch"](function (e)
 		{
 			try
@@ -28189,42 +28181,42 @@ function StripIdAttributesRecursive($ele)
 	});
 }
 var UrlParameters =
-{
-	loaded: false,
-	parsed_url_params: {},
-	Get: function ()
 	{
-		if (!this.loaded)
+		loaded: false,
+		parsed_url_params: {},
+		Get: function ()
 		{
-			var params = this.parsed_url_params;
-			window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value)
+			if (!this.loaded)
+			{
+				var params = this.parsed_url_params;
+				window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (str, key, value)
+				{
+					params[key.toLowerCase()] = decodeURIComponent(value);
+				})
+				this.loaded = true;
+			}
+			for (var i = 0; i < arguments.length; i++)
+			{
+				if (typeof this.parsed_url_params[arguments[i].toLowerCase()] != 'undefined')
+					return this.parsed_url_params[arguments[i].toLowerCase()];
+			}
+			return "";
+		}
+	};
+var UrlHashParameters =
+	{
+		Get: function (key)
+		{
+			var params = {};
+			window.location.hash.replace(/[?#&]+([^=&]+)=([^&]*)/gi, function (str, key, value)
 			{
 				params[key.toLowerCase()] = decodeURIComponent(value);
 			})
-			this.loaded = true;
+			if (typeof params[key.toLowerCase()] != 'undefined')
+				return params[key.toLowerCase()];
+			return "";
 		}
-		for (var i = 0; i < arguments.length; i++)
-		{
-			if (typeof this.parsed_url_params[arguments[i].toLowerCase()] != 'undefined')
-				return this.parsed_url_params[arguments[i].toLowerCase()];
-		}
-		return "";
-	}
-};
-var UrlHashParameters =
-{
-	Get: function (key)
-	{
-		var params = {};
-		window.location.hash.replace(/[?#&]+([^=&]+)=([^&]*)/gi, function (str, key, value)
-		{
-			params[key.toLowerCase()] = decodeURIComponent(value);
-		})
-		if (typeof params[key.toLowerCase()] != 'undefined')
-			return params[key.toLowerCase()];
-		return "";
-	}
-};
+	};
 function htmlEncode(value)
 {
 	return $('<div/>').text(value).html();
@@ -28357,58 +28349,58 @@ function formatBitsPerSecond(bits)
 	return (negative ? '-' : '') + (bits / Math.pow(k, i)).toFloat(decimals[i]) + ' ' + sizes[i];
 }
 var mouseCoordFixer =
-{
-	last: {
-		x: 0, y: 0
-	}
-	, fix: function (e)
 	{
-		if (e.alreadyMouseCoordFixed)
-			return;
-		e.alreadyMouseCoordFixed = true;
-		if (e.type.startsWith("touch") || typeof e.pageX === "undefined")
+		last: {
+			x: 0, y: 0
+		}
+		, fix: function (e)
 		{
-			//if (e.changedTouches && e.changedTouches.length > 0)
-			//{
-			//	var t = null;
-			//	for (var i = 0; i < e.changedTouches.length; i++)
-			//	{
-			//		if (e.changedTouches[i].identifier === 0)
-			//		{
-			//			t = e.changedTouches[i];
-			//			break;
-			//		}
-			//	}
-			//	if (!t)
-			//		t = e.changedTouches[0];
-			//	mouseCoordFixer.last.x = e.mouseX = t.pageX + $(window).scrollLeft();
-			//	mouseCoordFixer.last.y = e.mouseY = t.pageY + $(window).scrollTop();
+			if (e.alreadyMouseCoordFixed)
+				return;
+			e.alreadyMouseCoordFixed = true;
+			if (e.type.startsWith("touch") || typeof e.pageX === "undefined")
+			{
+				//if (e.changedTouches && e.changedTouches.length > 0)
+				//{
+				//	var t = null;
+				//	for (var i = 0; i < e.changedTouches.length; i++)
+				//	{
+				//		if (e.changedTouches[i].identifier === 0)
+				//		{
+				//			t = e.changedTouches[i];
+				//			break;
+				//		}
+				//	}
+				//	if (!t)
+				//		t = e.changedTouches[0];
+				//	mouseCoordFixer.last.x = e.mouseX = t.pageX + $(window).scrollLeft();
+				//	mouseCoordFixer.last.y = e.mouseY = t.pageY + $(window).scrollTop();
 
-			//}
-			//else
-			if (e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 0)
-			{
-				mouseCoordFixer.last.x = e.mouseX = e.originalEvent.touches[0].pageX + $(window).scrollLeft();
-				mouseCoordFixer.last.y = e.mouseY = e.originalEvent.touches[0].pageY + $(window).scrollTop();
-			}
-			else if (e.touches && e.touches.length > 0)
-			{
-				mouseCoordFixer.last.x = e.mouseX = e.touches[0].pageX + $(window).scrollLeft();
-				mouseCoordFixer.last.y = e.mouseY = e.touches[0].pageY + $(window).scrollTop();
+				//}
+				//else
+				if (e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length > 0)
+				{
+					mouseCoordFixer.last.x = e.mouseX = e.originalEvent.touches[0].pageX + $(window).scrollLeft();
+					mouseCoordFixer.last.y = e.mouseY = e.originalEvent.touches[0].pageY + $(window).scrollTop();
+				}
+				else if (e.touches && e.touches.length > 0)
+				{
+					mouseCoordFixer.last.x = e.mouseX = e.touches[0].pageX + $(window).scrollLeft();
+					mouseCoordFixer.last.y = e.mouseY = e.touches[0].pageY + $(window).scrollTop();
+				}
+				else
+				{
+					e.mouseX = mouseCoordFixer.last.x;
+					e.mouseY = mouseCoordFixer.last.y;
+				}
 			}
 			else
 			{
-				e.mouseX = mouseCoordFixer.last.x;
-				e.mouseY = mouseCoordFixer.last.y;
+				mouseCoordFixer.last.x = e.mouseX = e.pageX + $(window).scrollLeft();
+				mouseCoordFixer.last.y = e.mouseY = e.pageY + $(window).scrollTop();
 			}
 		}
-		else
-		{
-			mouseCoordFixer.last.x = e.mouseX = e.pageX + $(window).scrollLeft();
-			mouseCoordFixer.last.y = e.mouseY = e.pageY + $(window).scrollTop();
-		}
-	}
-};
+	};
 function IE_GetDevicePixelRatio()
 {
 	return Math.sqrt(screen.deviceXDPI * screen.deviceYDPI) / 96;
