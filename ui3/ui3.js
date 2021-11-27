@@ -196,6 +196,7 @@ var browser_is_android = false;
 var pnacl_player_supported = false; // pNaCl H.264 player
 var mse_mp4_h264_supported = false; // HTML5 H.264 player
 var mse_mp4_aac_supported = false;
+var webcodecs_h264_player_supported = false; // WebCodecs h264 player
 var vibrate_supported = false;
 var web_audio_autoplay_disabled = false;
 var cookies_accessible = false;
@@ -234,7 +235,9 @@ function DoUIFeatureDetection()
 			var mse_support = detectMSESupport();
 			mse_mp4_h264_supported = streaming_supported && (mse_support & 1) > 0;
 			mse_mp4_aac_supported = streaming_supported && (mse_support & 2) > 0; // Not yet used
-			any_h264_playback_supported = fetch_supported && readable_stream_supported && (h264_js_player_supported || mse_mp4_h264_supported || pnacl_player_supported);
+			var webcodecs_support = detectWebCodecsVideoDecoderSupport();
+			webcodecs_h264_player_supported = streaming_supported && webcodecs_support.h264;
+			any_h264_playback_supported = streaming_supported && (h264_js_player_supported || mse_mp4_h264_supported || pnacl_player_supported || webcodecs_h264_player_supported);
 
 			detectAudioSupport();
 			vibrate_supported = detectVibrateSupport();
@@ -276,6 +279,22 @@ function DoUIFeatureDetection()
 					if (!((mse_support & 1) > 0))
 						ul.append('<li>Media Source Extensions, H.264 codec, MP4 format</li>');
 					ul_root.append($('<li>The HTML5 H.264 Player requires these unsupported features:</li>').append(ul));
+				}
+				if (!webcodecs_h264_player_supported)
+				{
+					var ul = $('<ul></ul>');
+					if (!streaming_supported)
+						ul.append('<li>Data Streaming</li>');
+					if (webcodecs_support.videoFrame && !webcodecs_support.decoder && !isSecureContext)
+						ul.append('<li>WebCodecs: VideoDecoder requires secure context (HTTPS).</li>');
+					else
+					{
+						if (!webcodecs_support.decoder)
+							ul.append('<li>WebCodecs: Video Decoder</li>');
+						else if (!webcodecs_support.h264)
+							ul.append('<li>WebCodecs: H.264 Codec</li>');
+					}
+					ul_root.append($('<li>The WebCodecs H.264 Player requires these unsupported features:</li>').append(ul));
 				}
 				if (!any_h264_playback_supported)
 					ul_root.append($('<li>No H.264 Player is available.</li>'));
@@ -332,6 +351,8 @@ function DoUIFeatureDetection()
 					$videoPlayers.append("<li>H.264 via NaCl</li>");
 				if (h264_js_player_supported)
 					$videoPlayers.append("<li>H.264 via JavaScript</li>");
+				if (webcodecs_h264_player_supported)
+					$videoPlayers.append("<li>H.264 via WebCodecs</li>");
 				$('#videoPlayersSupported').append($videoPlayers);
 			});
 			return;
@@ -472,6 +493,35 @@ function detectMSESupport()
 	}
 	catch (ex) { }
 	return 0;
+}
+function detectWebCodecsVideoDecoderSupport()
+{
+	var result = { videoFrame: false, decoder: false, h264: false };
+	try
+	{
+		var videoDecoder = null;
+		if ('VideoFrame' in window)
+			result.videoFrame = true;
+		if ('VideoDecoder' in window)
+		{
+			try
+			{
+				var videoDecoder = new VideoDecoder({ output: function (frame) { }, error: function (error) { } });
+				result.decoder = true;
+				try
+				{
+					videoDecoder.configure({ codec: "avc1.640029" });
+					result.h264 = true;
+				}
+				catch (ex) { }
+				finally { videoDecoder.reset(); }
+			}
+			catch (ex) { }
+			finally { videoDecoder.close(); }
+		}
+	}
+	catch (ex) { }
+	return result;
 }
 function detectAudioSupport()
 {
@@ -666,11 +716,14 @@ var H264PlayerOptions = {
 	HTML5: "HTML5",
 	NaCl_HWVA_Auto: "NaCl (Auto hw accel)",
 	NaCl_HWVA_No: "NaCl (No hw accel)",
-	NaCl_HWVA_Yes: "NaCl (Only hw accel)"
+	NaCl_HWVA_Yes: "NaCl (Only hw accel)",
+	WebCodecs: "WebCodecs"
 }
 function GetH264PlayerOptions()
 {
 	var arr = new Array();
+	if (webcodecs_h264_player_supported)
+		arr.push(H264PlayerOptions.WebCodecs);
 	if (mse_mp4_h264_supported)
 		arr.push(H264PlayerOptions.HTML5);
 	if (pnacl_player_supported)
@@ -907,6 +960,10 @@ var defaultSettings =
 		}
 		, {
 			key: "ui3_cps_uiSettings_category_Video_Player_visible"
+			, value: "1"
+		}
+		, {
+			key: "ui3_cps_uiSettings_category_UI_Status_Sounds_visible"
 			, value: "1"
 		}
 		, {
@@ -1225,10 +1282,19 @@ var defaultSettings =
 			, category: "Clips / Alerts"
 		}
 		, {
-			key: "ui3_hires_jpeg_disables_preview_animation"
+			key: "ui3_hires_jpeg_popups"
 			, value: "0"
 			, inputType: "checkbox"
+			, label: 'Use Hi-res JPEG for alert mouseover'
+			, hint: "This only affects alerts that have Hi-res JPEG images saved by Blue Iris"
+			, category: "Clips / Alerts"
+		}
+		, {
+			key: "ui3_hires_jpeg_disables_preview_animation"
+			, value: "1"
+			, inputType: "checkbox"
 			, label: 'No preview animation for alerts with Hi-res JPEG'
+			, hint: 'The preview animation would prevent you from reading annotations from deepstack AI.'
 			, category: "Clips / Alerts"
 		}
 		, {
@@ -1503,6 +1569,14 @@ var defaultSettings =
 			, value: "0"
 			, inputType: "checkbox"
 			, label: '<svg class="icon clipicon" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_Alert1"></use></svg> on Other Trigger'
+			, onChange: OnChange_ui3_camera_overlay_icons
+			, category: "Event-Triggered Icons"
+		}
+		, {
+			key: "ui3_camera_overlay_icon_webcasting_disabled"
+			, value: "1"
+			, inputType: "checkbox"
+			, label: '<svg class="icon clipicon noflip" style="fill: rgba(255,0,0,1)"><use xlink:href="#svg_x5F_HoldProfile"></use></svg> if Webcasting Disabled'
 			, onChange: OnChange_ui3_camera_overlay_icons
 			, category: "Event-Triggered Icons"
 		}
@@ -2718,6 +2792,7 @@ $(function ()
 	BI_CustomEvent.Invoke("UI_Loading_Start");
 
 	$DialogDefaults.theme = "dark";
+	SimpleDialog.onErrorDefault = toaster.Error;
 
 	if (location.protocol == "file:")
 	{
@@ -2782,7 +2857,7 @@ $(function ()
 	}
 
 	if (fetch_streams_cant_close_bug && settings.ui3_edge_fetch_bug_h264_enable !== "1")
-		any_h264_playback_supported = h264_js_player_supported = mse_mp4_h264_supported = pnacl_player_supported = false; // Affects Edge 17.x, 18.x, and possibly newer versions.
+		any_h264_playback_supported = h264_js_player_supported = mse_mp4_h264_supported = pnacl_player_supported = webcodecs_h264_player_supported = false; // Affects Edge 17.x, 18.x, and possibly newer versions.
 
 	HandlePreLoadUrlParameters();
 
@@ -3098,17 +3173,23 @@ var skipLoadingFirstVideoStream = false;
 function HandlePreLoadUrlParameters()
 {
 	// Parameter "tab"
-	var tab = UrlParameters.Get("tab");
+	var tab = UrlParameters.Get("tab", "t");
 	if (tab !== '')
+	{
+		if (tab.toUpperCase() === "L")
+			tab = "live";
+		if (tab.toUpperCase() === "C")
+			tab = "clips";
 		settings.ui3_defaultTab = tab;
+	}
 
 	// Parameter "clipview"
-	var clipview = UrlParameters.Get("clipview");
+	var clipview = UrlParameters.Get("clipview", "v");
 	if (clipview !== '')
 		settings.ui3_current_dbView = clipview;
 
 	// Parameter "group"
-	var group = UrlParameters.Get("group");
+	var group = UrlParameters.Get("group", "g");
 	if (group !== '')
 	{
 		settings.ui3_defaultCameraGroupId = group;
@@ -3121,7 +3202,7 @@ function HandlePreLoadUrlParameters()
 	}
 
 	// Parameter "cam"
-	var cam = UrlParameters.Get("cam");
+	var cam = UrlParameters.Get("cam", "c");
 	if (cam !== '')
 	{
 		BI_CustomEvent.AddListener("FinishedLoading", function ()
@@ -3131,14 +3212,14 @@ function HandlePreLoadUrlParameters()
 				videoPlayer.ImgClick_Camera(camData);
 		});
 	}
-	var maximize = UrlParameters.Get("maximize");
+	var maximize = UrlParameters.Get("maximize", "m");
 	if (maximize === "1" || maximize.toLowerCase() === "true")
 		settings.ui3_is_maximized = "1";
 	else if (maximize === "0" || maximize.toLowerCase() === "false")
 		settings.ui3_is_maximized = "0";
 
 	// Parameter "rec", e.g. "12345" or "12345-5000"
-	var recId = UrlParameters.Get("rec");
+	var recId = UrlParameters.Get("rec", "r");
 	if (recId !== '')
 	{
 		// Get Offset
@@ -3163,7 +3244,7 @@ function HandlePreLoadUrlParameters()
 	}
 
 	// Parameter "streamingprofile"
-	var streamingprofile = UrlParameters.Get("streamingprofile");
+	var streamingprofile = UrlParameters.Get("streamingprofile", "p");
 	if (streamingprofile !== '')
 		settings.ui3_streamingQuality = streamingprofile;
 }
@@ -3452,7 +3533,8 @@ function StatusBars()
 			{
 				ProgressBar.setProgress(statusEles[i].$pb, progressAmount);
 				ProgressBar.setColor(statusEles[i].$pb, progressColor, progressBackgroundColor);
-				statusEles[i].$amount && statusEles[i].$amount.text(progressAmountText);
+				progressAmountText = progressAmountText.toString();
+				statusEles[i].$amount && statusEles[i].$amount.text() !== progressAmountText.toString() && statusEles[i].$amount.text(progressAmountText);
 			}
 	};
 	this.setTooltip = function (name, tooltipText)
@@ -3541,7 +3623,8 @@ var ProgressBar =
 		progressAmount = Clamp(progressAmount, 0, 1);
 		var changed = typeof ele.pbValue == "undefined" || ele.pbValue != progressAmount;
 		ele.pbValue = progressAmount;
-		ele.$progressBarInner.css("width", (progressAmount * 100) + "%");
+		if (changed)
+			ele.$progressBarInner.css("width", (progressAmount * 100) + "%");
 		if (typeof ele.moveDragHandleElements == "function")
 			ele.moveDragHandleElements();
 		if (changed && typeof ele.onProgressChanged == "function")
@@ -3737,7 +3820,7 @@ function DropdownBoxes()
 				for (var i = 0; i < data.length; i++)
 				{
 					var isGroupOrCycle = cameraListLoader.CameraIsGroupOrCycle(data[i]);
-					if (isGroupOrCycle || (settings.ui3_show_cameras_in_group_dropdowns === "1" && data[i].isEnabled))
+					if (isGroupOrCycle || (settings.ui3_show_cameras_in_group_dropdowns === "1" && data[i].isEnabled && data[i].webcast))
 					{
 						this.items.push(new DropdownListItem(
 							{
@@ -5557,7 +5640,8 @@ function PlaybackControls()
 	}
 	this.SetProgressText = function (text)
 	{
-		$progressText.text(text);
+		if ($progressText.text() !== text)
+			$progressText.text(text);
 	}
 	this.IsVisible = function ()
 	{
@@ -7467,6 +7551,10 @@ function ClipLoader(clipsBodySelector)
 			recoveryFunction = null;
 		}
 	}
+	this.GetCurrentFilteredCamera = function ()
+	{
+		return lastLoadedCameraFilter;
+	}
 	this.resizeClipList = function ()
 	{
 		var currentClipTileSize = getClipTileSize();
@@ -7805,13 +7893,13 @@ function ClipLoader(clipsBodySelector)
 
 					if (getMouseoverClipThumbnails())
 					{
-						var thumbPath = GetThumbnailPath(clipData.thumbPath, true);
+						var thumbPath = GetThumbnailPath(clipData.thumbPath, settings.ui3_hires_jpeg_popups === "1");
 						if (thumbEle.getAttribute("src") == thumbPath)
 							thumbPath = thumbEle;
 						var aspectRatio = thumbEle.naturalWidth / thumbEle.naturalHeight;
 						var renderH = 240;
 						var renderW = renderH * aspectRatio;
-						if (clipData.hasHighResJpeg)
+						if (clipData.hasHighResJpeg && settings.ui3_hires_jpeg_popups === "1")
 						{
 							var clipRes = new ClipRes(clipData.res);
 							if (clipRes.valid)
@@ -8480,6 +8568,9 @@ function ClipLoader(clipsBodySelector)
 		if (!sessionManager.IsAdministratorSession(allSelectedClipIDs.length > 0 ? allSelectedClipIDs[0] : null))
 			return openLoginDialog(function () { self.Multi_Delete(allSelectedClipIDs); });
 
+		// Get a reference to the first clip before we try to close the current clip (which can cause the clip list to be temporarily empty)
+		var clipData = self.GetClipFromId(allSelectedClipIDs[0]);
+
 		// Close current clip if it is among those being deleted.
 		var loadingClipId = videoPlayer.Loading().image.uniqueId;
 		for (var i = 0; i < allSelectedClipIDs.length; i++)
@@ -8497,7 +8588,6 @@ function ClipLoader(clipsBodySelector)
 
 		var allIdsCommaSeparated = '@' + allSelectedClipIDs.join(',@'); // Separated by ';' or ','
 		console.log("Deleting ", allIdsCommaSeparated);
-		var clipData = self.GetClipFromId(allSelectedClipIDs[0]);
 		DeleteAlert(allIdsCommaSeparated, clipData.isClip,
 			function ()
 			{
@@ -8878,9 +8968,9 @@ function ClipThumbnailVideoPreview_BruteForce()
 	this.Start = function ($clip, clipData, camName, frameNum, loopNum)
 	{
 		var duration = clipData.isClip ? clipData.msec : clipData.roughLengthMs;
-		if (settings.ui3_clipPreviewEnabled != "1" || duration < 500)
+		if (settings.ui3_clipPreviewEnabled !== "1" || duration < 500)
 			return;
-		if (clipData.hasHighResJpeg && settings.ui3_hires_jpeg_disables_preview_animation === "1")
+		if (clipData.hasHighResJpeg && settings.ui3_hires_jpeg_popups === "1" && settings.ui3_hires_jpeg_disables_preview_animation === "1")
 			return;
 		if (lastItemId != clipData.recId)
 		{
@@ -8933,7 +9023,7 @@ function ClipThumbnailVideoPreview_BruteForce()
 			aspectRatio = 16 / 9;
 		var expectedHeight = 240;
 		var expectedWidth = expectedHeight * aspectRatio;
-		if (clipData.hasHighResJpeg)
+		if (clipData.hasHighResJpeg && settings.ui3_hires_jpeg_popups === "1")
 		{
 			var clipRes = new ClipRes(clipData.res);
 			if (clipRes.valid)
@@ -10534,7 +10624,11 @@ function CameraListLoader()
 			self.singleCameraGroupMap = {};
 			// See what we've got
 			for (var i = 0; i < lastResponse.data.length; i++)
+			{
+				if (typeof lastResponse.data[i].webcast === "undefined")
+					lastResponse.data[i].webcast = true;
 				allCameras[lastResponse.data[i].optionValue] = lastResponse.data[i];
+			}
 			for (var i = 0; i < lastResponse.data.length; i++)
 			{
 				var obj = lastResponse.data[i];
@@ -10643,7 +10737,7 @@ function CameraListLoader()
 			if (cameraListUpdateTimeout != null)
 				clearTimeout(cameraListUpdateTimeout);
 			var interval = 5000;
-			if (AnyCameraOverlayIconsEnabled() || videoPlayer.PrioritizeTriggeredEnabled())
+			if (AnyCameraTriggerOverlayIconsEnabled() || videoPlayer.PrioritizeTriggeredEnabled())
 				interval = 1000;
 			cameraListUpdateTimeout = setTimeout(function ()
 			{
@@ -10804,12 +10898,12 @@ function CameraListLoader()
 		{
 			if (self.CameraIsGroup(cam))
 				return !!cam.dynamic;
-			//else if (self.CameraIsCycle(cam))
-			//{
-			//	cam = self.GetCameraWithId(groupId.substr(1));
-			//	if (cam && !self.IsFakeGroup(groupId))
-			//		return !!cam.dynamic;
-			//}
+			else if (self.CameraIsCycle(cam) && groupId === "@Index")
+			{
+				cam = self.GetCameraWithId(groupId.substr(1));
+				if (cam && !self.IsFakeGroup(groupId))
+					return !!cam.dynamic;
+			}
 		}
 		return false;
 	}
@@ -11245,7 +11339,7 @@ function VideoPlayerController()
 	}
 	this.CamIsConsideredTriggered = function (camData)
 	{
-		if (camData && camData.isEnabled && camData.active)
+		if (camData && camData.isEnabled && camData.active && camData.webcast)
 		{
 			if (settings.ui3_prioritizeTriggered_triggerMode === "Trigger")
 			{
@@ -11446,7 +11540,7 @@ function VideoPlayerController()
 		if (currentlyLoadingImage == null || currentlyLoadingImage.isLive)
 			return;
 		var camData = cameraListLoader.GetCameraWithId(lastLiveCameraOrGroupId);
-		if (camData && camData.isEnabled)
+		if (camData && camData.isEnabled && camData.webcast)
 		{
 			clipLoader.suppressClipListLoad = true;
 			self.LoadLiveCamera(camData);
@@ -11466,7 +11560,7 @@ function VideoPlayerController()
 		if (videoData.isLive && !videoData.isGroup)
 		{
 			var camData = cameraListLoader.GetCameraWithId(videoData.id);
-			if (!camData || !camData.isEnabled)
+			if (!camData || !camData.isEnabled || !camData.webcast)
 			{
 				cameraListLoader.LoadCameraList();
 				self.LoadHomeGroup();
@@ -11518,12 +11612,17 @@ function VideoPlayerController()
 			toaster.Error("The target camera or group could not be found.");
 			return;
 		}
-		if (!camData.isEnabled && !cameraListLoader.CameraIsGroupOrCycle(camData))
+		if ((!camData.isEnabled || !camData.webcast) && !cameraListLoader.CameraIsGroupOrCycle(camData))
+		{
+			console.log("LoadLiveCamera will not try to load " + camData.optionValue + ".", "Enabled: " + camData.isEnabled, "Webcast: " + camData.webcast, "IsGroupOrCycle: " + cameraListLoader.CameraIsGroupOrCycle(camData));
+			if (!camData.webcast)
+				toaster.Warning("The camera you clicked has webcasting disabled.");
 			return;
+		}
 		if (cameraListLoader.singleCameraGroupMap[camData.optionValue])
 		{
 			var maybeCamData = cameraListLoader.GetCameraWithId(cameraListLoader.singleCameraGroupMap[camData.optionValue]);
-			if (maybeCamData.isEnabled)
+			if (maybeCamData.isEnabled && maybeCamData.webcast)
 				camData = maybeCamData;
 		}
 
@@ -11548,7 +11647,8 @@ function VideoPlayerController()
 		ptzButtons.UpdatePtzControlDisplayState();
 		dropdownBoxes.setLabelText("currentGroup", CleanUpGroupName(clc.optionDisplay));
 
-		clipLoader.LoadClips(); // This method does nothing if not on the clips/alerts tabs.
+		if (clipLoader.GetCurrentFilteredCamera() !== cli.id)
+			clipLoader.LoadClips(); // This method does nothing if not on the clips/alerts tabs.
 
 		videoOverlayHelper.ShowLoadingOverlay(true);
 		if (playerModule)
@@ -11845,11 +11945,15 @@ function VideoPlayerController()
 		}
 	}
 	var fpsZeroTimeout = null;
+	var setFpsStatusBarThrottled = throttle(function (currentFps, maxFps)
+	{
+		statusBars.setProgress("fps", (currentFps / maxFps), currentFps);
+	}, 250);
 	var RefreshFps = function (imgRequestMs)
 	{
 		var currentFps = fpsCounter.getFPS(imgRequestMs);
 		var maxFps = currentlyLoadingCamera.FPS || 10;
-		statusBars.setProgress("fps", (currentFps / maxFps), currentFps);
+		setFpsStatusBarThrottled(currentFps, maxFps);
 
 		// This allows the FPS to change to 0 if connectivity is lost or greatly reduced
 		if (fpsZeroTimeout != null)
@@ -12079,9 +12183,15 @@ function JpegVideoModule()
 				if (nerdStats.IsOpen())
 				{
 					var loaded = videoPlayer.Loaded().image;
-					var nativeRes = " (Native: " + loading.fullwidth + "x" + loading.fullheight + ")";
-					if (loading.fullwidth !== loaded.actualwidth || loading.fullheight !== loaded.actualheight)
-						nativeRes = '<span class="nonMatchingNativeRes">' + nativeRes + '</span>';
+					var nativeRes = "";
+					if (cameraListLoader.isDynamicLayoutEligible(loaded.id))
+						nativeRes = " (dynamically sized group)";
+					else
+					{
+						nativeRes = " (Native: " + loading.fullwidth + "x" + loading.fullheight + ")";
+						if (loading.fullwidth !== loaded.actualwidth || loading.fullheight !== loaded.actualheight)
+							nativeRes = '<span class="nonMatchingNativeRes">' + nativeRes + '</span>';
+					}
 
 					nerdStats.BeginUpdate();
 					nerdStats.UpdateStat("Viewport", null, $layoutbody.width() + "x" + $layoutbody.height() + GetDevicePixelRatioTag());
@@ -12494,7 +12604,8 @@ function JpegVideoModule()
 }
 ///////////////////////////////////////////////////////////////
 // Fetch H264 Video Module ////////////////////////////////////
-// Using OpenH264 or Pnacl_Player or HTML5_MSE_Player /////////
+// Using OpenH264_Player or Pnacl_Player or HTML5_MSE_Player //
+// or WebCodecs_Player ////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 function FetchH264VideoModule()
 {
@@ -12542,7 +12653,11 @@ function FetchH264VideoModule()
 		isInitialized = true;
 		// Do one-time initialization here
 		//console.log("Initializing h264_player");
-		if (mse_mp4_h264_supported && settings.ui3_h264_choice3 === H264PlayerOptions.HTML5)
+		if (webcodecs_h264_player_supported && settings.ui3_h264_choice3 === H264PlayerOptions.WebCodecs)
+			h264_player = window.webcodec_player_instance = new WebCodec_Player(FrameRendered, PlaybackReachedNaturalEnd);
+		else if (mse_mp4_h264_supported &&
+			(settings.ui3_h264_choice3 === H264PlayerOptions.HTML5
+				|| (settings.ui3_h264_choice3 === H264PlayerOptions.WebCodecs && !webcodecs_h264_player_supported)))
 			h264_player = new HTML5_MSE_Player($camimg_wrapper, FrameRendered, PlaybackReachedNaturalEnd, playerErrorCb);
 		else if (pnacl_player_supported &&
 			(settings.ui3_h264_choice3 === H264PlayerOptions.NaCl_HWVA_Auto
@@ -12553,7 +12668,13 @@ function FetchH264VideoModule()
 			h264_player = new OpenH264_Player(FrameRendered, PlaybackReachedNaturalEnd);
 		else
 		{
-			if (mse_mp4_h264_supported)
+			if (webcodecs_h264_player_supported)
+			{
+				settings.ui3_h264_choice3 = H264PlayerOptions.WebCodecs;
+				isInitialized = false;
+				Initialize();
+			}
+			else if (mse_mp4_h264_supported)
 			{
 				settings.ui3_h264_choice3 = H264PlayerOptions.HTML5;
 				isInitialized = false;
@@ -12896,7 +13017,8 @@ function FetchH264VideoModule()
 			}
 			else if (frame.format.wFormatTag === 61868) // 0xF1AC (FLAC)
 			{
-				audioCodec = "flac";
+				if (audioCodec.indexOf("flac") !== 0)
+					audioCodec = "flac";
 				//if (!flacDecoder)
 				//	flacDecoder = window.UI3FLACDecoder(pcmPlayer.AcceptFrame);
 				//flacDecoder.DecodeUint8Array(frame.frameData);
@@ -13157,15 +13279,22 @@ function FetchH264VideoModule()
 			var bitRate_Video = bitRateCalc_Video.GetBPS() * 8;
 			var bitRate_Audio = bitRateCalc_Audio.GetBPS() * 8;
 			var bufferSize = pcmPlayer.GetBufferedMs();
-			var interFrame = perfNow - lastFrameAt;
-			var interFrameError = Math.abs(frame.expectedInterframe - interFrame);
+			var interFrame = frame.expectedInterframe;
+			var actualInterFrame = perfNow - lastFrameAt;
+			var interFrameError = Math.abs(frame.expectedInterframe - actualInterFrame);
 			var netDelay = h264_player.GetNetworkDelay().toFloat();
 			var decoderDelay = h264_player.GetBufferedTime().toFloat();
 			if (h264_player.isMsePlayer)
 				interFrame = frame.duration ? frame.duration : 0;
-			var nativeRes = " (Native: " + loading.fullwidth + "x" + loading.fullheight + ")";
-			if (loading.fullwidth !== frame.width || loading.fullheight !== frame.height)
-				nativeRes = '<span class="nonMatchingNativeRes">' + nativeRes + '</span>';
+			var nativeRes = "";
+			if (cameraListLoader.isDynamicLayoutEligible(loading.id))
+				nativeRes = " (dynamically sized group)";
+			else
+			{
+				nativeRes = " (Native: " + loading.fullwidth + "x" + loading.fullheight + ")";
+				if (loading.fullwidth !== frame.width || loading.fullheight !== frame.height)
+					nativeRes = '<span class="nonMatchingNativeRes">' + nativeRes + '</span>';
+			}
 
 			nerdStats.BeginUpdate();
 			nerdStats.UpdateStat("Viewport", null, $layoutbody.width() + "x" + $layoutbody.height() + GetDevicePixelRatioTag());
@@ -13307,6 +13436,7 @@ function OpenH264_Player(frameRendered, PlaybackReachedNaturalEndCB)
 	var isValid = true;
 	var allFramesAccepted = false;
 	var renderScheduler = null;
+	var lastFrameWarning = performance.now() - 60000;
 
 	var onLoad = function ()
 	{
@@ -13368,7 +13498,6 @@ function OpenH264_Player(frameRendered, PlaybackReachedNaturalEndCB)
 		}
 	}
 
-	var lastFrameWarning = performance.now() - 60000;
 	var frameError = function (badFrame)
 	{
 		console.log("Frame Error", badFrame);
@@ -13429,30 +13558,30 @@ function OpenH264_Player(frameRendered, PlaybackReachedNaturalEndCB)
 	{
 		return finishedFrameCount;
 	}
+	/**
+	 * Returns the number of buffered video frames that have not yet been rendered.
+	 * If the system has sufficient computational power, this number should remain close to 0.
+	 */
 	this.GetBufferedFrameCount = function ()
 	{
-		/// <summary>
-		/// Returns the number of buffered video frames that have not yet been rendered. 
-		/// If the system has sufficient computational power, this number should remain close to 0.
-		/// </summary>
 		return acceptedFrameCount - finishedFrameCount;
 	}
+	/**
+	 * Returns the approximate number of milliseconds of video delay caused by insufficient network speed.
+	 * If the system has sufficient network bandwidth, this number should remain close to 0.
+	 * One or two frames worth of delay is nothing to worry about.
+	 */
 	this.GetNetworkDelay = function ()
 	{
-		/// <summary>
-		/// Returns the approximate number of milliseconds of video delay caused by insufficient network speed.
-		/// If the system has sufficient network bandwidth, this number should remain close to 0.
-		/// One or two frames worth of delay is nothing to worry about.
-		/// </summary>
 		return netDelayCalc.Calc();
 	}
+	/**
+	 * Returns the number of milliseconds of buffered video frames, calculated as 
+	 * timestampLastAcceptedFrame - timestampLastRenderedFrame.
+	 * If the system has sufficient computational power, this number should remain close to 0.
+	 */
 	this.GetBufferedTime = function ()
 	{
-		/// <summary>
-		/// Returns the number of milliseconds of buffered video frames, calculated as 
-		/// timestampLastAcceptedFrame - timestampLastRenderedFrame.
-		/// If the system has sufficient computational power, this number should remain close to 0.
-		/// </summary>
 		return timestampLastAcceptedFrame - timestampLastRenderedFrame;
 	}
 	this.GetLastFrameRenderTime = function ()
@@ -13515,9 +13644,14 @@ function OpenH264_Player(frameRendered, PlaybackReachedNaturalEndCB)
 
 	Initialize();
 }
+/**
+ * Manages the playback clock and keeps frames rendering as closely as possible to their intended timestamps while adding a minimum amount of video latency.
+ * @param {Function} renderFunc
+ * @param {Function} dropFunc
+ * @param {any} averageRenderTime
+ */
 function RenderScheduler(renderFunc, dropFunc, averageRenderTime)
 {
-	/// <summary>Manages the playback clock and keeps frames rendering as closely as possible to their intended timestamps.</summary>
 	var self = this;
 	var frameQueue = [];
 	var timeout = null;
@@ -13759,9 +13893,22 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 		{
 			loadingHelper.SetErrorStatus("h264");
 			$err.append($disablePnaclButton);
-			var $explanation = mse_mp4_h264_supported || h264_js_player_supported ? $('<div>You can load UI3 by changing to a different player:</div>') : $('<div>You can load UI3 by changing to a JPEG streaming method:</div>');
+			var $explanation = mse_mp4_h264_supported || h264_js_player_supported || webcodecs_h264_player_supported ? $('<div>You can load UI3 by changing to a different player:</div>') : $('<div>You can load UI3 by changing to a JPEG streaming method:</div>');
 			$explanation.css('margin-top', '12px');
 			$err.append($explanation);
+			if (webcodecs_h264_player_supported)
+			{
+				var $disablePnaclButton3 = $('<input type="button" value="WebCodecs (best)" />');
+				$disablePnaclButton3.css('margin-top', '10px');
+				$disablePnaclButton3.css('padding', '6px');
+				$disablePnaclButton3.css('display', 'block');
+				$disablePnaclButton3.on('click', function ()
+				{
+					settings.ui3_h264_choice3 = H264PlayerOptions.WebCodecs;
+					ReloadInterface();
+				});
+				$err.append($disablePnaclButton3);
+			}
 			if (mse_mp4_h264_supported)
 			{
 				var $disablePnaclButton2 = $('<input type="button" value="HTML5 (fast)" />');
@@ -13788,17 +13935,17 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 				});
 				$err.append($disablePnaclButton);
 			}
-			var $disablePnaclButton = $('<input type="button" value="JPEG mode (no H.264)" />');
-			$disablePnaclButton.css('margin-top', '10px');
-			$disablePnaclButton.css('padding', '6px');
-			$disablePnaclButton.css('display', 'block');
-			$disablePnaclButton.on('click', function ()
+			var $disablePnaclButton4 = $('<input type="button" value="JPEG mode (no H.264)" />');
+			$disablePnaclButton4.css('margin-top', '10px');
+			$disablePnaclButton4.css('padding', '6px');
+			$disablePnaclButton4.css('display', 'block');
+			$disablePnaclButton4.on('click', function ()
 			{
 				any_h264_playback_supported = pnacl_player_supported = false;
 				genericQualityHelper.QualityChoiceChanged('');
 				selectionToast.remove();
 			});
-			$err.append($disablePnaclButton);
+			$err.append($disablePnaclButton4);
 		}
 		selectionToast = toaster.Error($err, isCrash || !isLoaded ? 9999999 : 60000, true);
 	}
@@ -13998,6 +14145,260 @@ function Pnacl_Player($startingContainer, frameRendered, PlaybackReachedNaturalE
 	Initialize();
 }
 ///////////////////////////////////////////////////////////////
+// WebCodec Player ////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+function WebCodec_Player(frameRendered, PlaybackReachedNaturalEndCB)
+{
+	var self = this;
+	var videoDecoder;
+	var canvas;
+	var $canvas;
+	var ctx;
+	var canvasW = 0;
+	var canvasH = 0;
+	var frameCache = {};
+	var acceptedFrameCount = 0; // Number of frames submitted to the decoder.
+	var decodedFrameCount = 0; // Number of frames rendered.
+	var finishedFrameCount = 0; // Number of frames rendered or dropped.
+	var netDelayCalc = new NetDelayCalc();
+	var timestampFirstAcceptedFrame = -1; // Frame timestamp (ms) of the first frame to be submitted to the decoder.
+	var timestampFirstDecodedFrame = -1; // Frame timestamp (ms) of the first frame to be decoded.
+	var timestampFirstRenderedFrame = -1; // Frame timestamp (ms) of the first frame to be rendered.
+	var timestampLastAcceptedFrame = -1; // Frame timestamp (ms) of the last frame to be submitted to the decoder.
+	var timestampLastDecodedFrame = -1; // Frame timestamp (ms) of the last frame to be decoded.
+	var timestampLastRenderedFrame = -1; // Frame timestamp (ms) of the last frame to be rendered.
+	var firstFrameReceivedAt = performance.now(); // The performance.now() reading at the moment the first frame was received from the network.
+	var lastFrameReceivedAt = performance.now(); // The performance.now() reading at the moment the last frame was received from the network.
+	var firstFrameDecodedAt = performance.now(); // The performance.now() reading at the moment the first frame was finished decoding.
+	var lastFrameDecodedAt = performance.now(); // The performance.now() reading at the moment the last frame was finished decoding.
+	var firstFrameRenderedAt = performance.now(); // The performance.now() reading at the moment the first frame was finished rendering.
+	var lastFrameRenderedAt = performance.now(); // The performance.now() reading at the moment the last frame was finished rendering.
+	var lastFrameRenderTime = 0; // Milliseconds it took to render the last frame.
+	var averageRenderTime = new RollingAverage();
+	var averageDecodeTime = new RollingAverage();
+	var allFramesAccepted = false;
+	var renderScheduler = null;
+	var lastFrameWarning = performance.now() - 60000;
+
+	var frameDecoded = function (nativeFrame)
+	{
+		var frame = frameCache[nativeFrame.timestamp];
+		if (!frame)
+		{
+			toaster.Error("A frame was decoded with a timestamp that is not in the frame cache.");
+			finishedFrameCount++;
+			return;
+		}
+		delete frameCache[nativeFrame.timestamp];
+		frame.nativeFrame = nativeFrame;
+		frame.width = nativeFrame.displayWidth;
+		frame.height = nativeFrame.displayHeight;
+		frame.timestamp = frame.time;
+		frame.rawtime = frame.meta.rawtime;
+
+		var timeNow = performance.now();
+		decodedFrameCount++;
+		timestampLastDecodedFrame = frame.timestamp;
+		lastFrameDecodedAt = timeNow;
+		if (timestampFirstDecodedFrame == -1)
+		{
+			timestampFirstDecodedFrame = timestampLastDecodedFrame;
+			firstFrameDecodedAt = timeNow;
+		}
+		renderScheduler.AddFrame(frame, averageRenderTime);
+	}
+	var renderFrame = function (frame)
+	{
+		if (canvasW != frame.width)
+			canvas.width = canvasW = frame.width;
+		if (canvasH != frame.height)
+			canvas.height = canvasH = frame.height;
+		var drawStart = performance.now();
+		ctx.drawImage(frame.nativeFrame, 0, 0, canvas.width, canvas.height);
+		var drawEnd = performance.now();
+		frame.nativeFrame.close();
+		frame.nativeFrame = null;
+		lastFrameRenderTime = drawEnd - drawStart;
+		averageRenderTime.Add(lastFrameRenderTime);
+		finishedFrameCount++;
+		timestampLastRenderedFrame = frame.timestamp;
+		lastFrameRenderedAt = drawEnd;
+		if (timestampFirstRenderedFrame == -1)
+		{
+			timestampFirstRenderedFrame = frame.timestamp;
+			firstFrameRenderedAt = drawEnd;
+		}
+		frameRendered(frame);
+		CheckStreamEndCondition();
+	}
+	var dropFrame = function (frame)
+	{
+		frame.nativeFrame.close();
+		frame.nativeFrame = null;
+		finishedFrameCount++;
+		CheckStreamEndCondition();
+	}
+	var CheckStreamEndCondition = function ()
+	{
+		if (allFramesAccepted && (finishedFrameCount) >= acceptedFrameCount)
+		{
+			if (PlaybackReachedNaturalEndCB)
+				PlaybackReachedNaturalEndCB(finishedFrameCount);
+		}
+	}
+	var decoderError = function (error)
+	{
+		if (error.message.match(/Codec reclaimed/i))
+		{
+			// This is an expected error in Chromium-based browsers if the video decoder is idle for about a minute.
+			console.log("WebCodecs", error);
+			return;
+		}
+		console.log("Frame Error", error);
+		var timeNow = performance.now();
+		if (timeNow - lastFrameWarning > 3000)
+		{
+			lastFrameWarning = timeNow;
+			toaster.Warning("Error decoding video frame(s)", 3000);
+		}
+	}
+	var RecoverVideoDecoder = function ()
+	{
+		if (!videoDecoder || videoDecoder.state === "closed")
+		{
+			videoDecoder = new VideoDecoder({ output: frameDecoded, error: decoderError });
+			videoDecoder.reset();
+			ConfigureVideoDecoder();
+		}
+	}
+	var ConfigureVideoDecoder = function ()
+	{
+		videoDecoder.configure({ codec: "avc1.640029", optimizeForLatency: true });
+	}
+	var Initialize = function ()
+	{
+		renderScheduler = new RenderScheduler(renderFrame, dropFrame);
+
+		RecoverVideoDecoder();
+
+		$("#webcodec_player_canvas").remove();
+		$canvas = $('<canvas id="webcodec_player_canvas" class="videoCanvas" width="100%" height="100%"></canvas>');
+		canvas = $canvas.get(0);
+		ctx = canvas.getContext('2d');
+
+		loadingHelper.SetLoadedStatus("h264");
+	}
+	this.Dispose = function ()
+	{
+		if (videoDecoder.state === "configured")
+			videoDecoder.close();
+	}
+	this.IsLoaded = function ()
+	{
+		return true;
+	}
+	this.IsValid = function ()
+	{
+		return true;
+	}
+	this.GetRenderedFrameCount = function ()
+	{
+		return finishedFrameCount;
+	}
+	this.GetBufferedFrameCount = function ()
+	{
+		return acceptedFrameCount - finishedFrameCount;
+	}
+	this.GetNetworkDelay = function ()
+	{
+		return netDelayCalc.Calc();
+	}
+	this.GetBufferedTime = function ()
+	{
+		return timestampLastAcceptedFrame - timestampLastRenderedFrame;
+	}
+	/**Clears the state of the video player, making it ready to accept a new stream. */
+	this.Flush = function ()
+	{
+		if (videoDecoder.state === "configured")
+		{
+			videoDecoder.reset();
+			ConfigureVideoDecoder();
+		}
+		renderScheduler.Reset(averageRenderTime);
+		acceptedFrameCount = 0;
+		decodedFrameCount = 0;
+		finishedFrameCount = 0;
+		netDelayCalc.Reset();
+		timestampFirstAcceptedFrame = -1;
+		timestampFirstDecodedFrame = -1;
+		timestampFirstRenderedFrame = -1;
+		timestampLastAcceptedFrame = -1;
+		timestampLastDecodedFrame = -1;
+		timestampLastRenderedFrame = -1;
+		var timeNow = performance.now();
+		firstFrameReceivedAt = timeNow;
+		lastFrameReceivedAt = timeNow;
+		firstFrameDecodedAt = timeNow;
+		lastFrameDecodedAt = timeNow;
+		firstFrameRenderedAt = timeNow;
+		lastFrameRenderedAt = timeNow;
+		allFramesAccepted = false;
+		frameCache = {};
+	}
+	/**
+	 * Accepts a compressed frame from the network.
+	 * @param {any} frame
+	 */
+	this.AcceptFrame = function (frame)
+	{
+		acceptedFrameCount++;
+		timestampLastAcceptedFrame = frame.time;
+		lastFrameReceivedAt = performance.now();
+		if (timestampFirstAcceptedFrame == -1)
+		{
+			timestampFirstAcceptedFrame = frame.time;
+			firstFrameRenderedAt = lastFrameReceivedAt; // This value is faked so the timing starts more reasonably.
+		}
+		netDelayCalc.Frame(frame.time, lastFrameReceivedAt);
+
+		var chunkArgs = {
+			type: frame.isKeyframe() ? "key" : "delta",
+			timestamp: frame.time * 1000,
+			duration: 0,
+			data: frame.frameData.buffer
+		};
+		frameCache[chunkArgs.timestamp] = frame;
+		var chunk = new EncodedVideoChunk(chunkArgs);
+		RecoverVideoDecoder();
+		videoDecoder.decode(chunk);
+	}
+	this.Toggle = function ($wrapper, activate)
+	{
+		$canvas.appendTo($wrapper);
+	}
+	/**Gets the visible DOM element that shows the video. */
+	this.GetPlayerElement = function ()
+	{
+		return canvas;
+	}
+	this.ClearDrawingSurface = function ()
+	{
+		ClearCanvas(canvas);
+	}
+	this.PreviousFrameIsLastFrame = function ()
+	{
+		allFramesAccepted = true;
+		CheckStreamEndCondition();
+	}
+	this.GetVideoDecoder = function ()
+	{
+		return videoDecoder;
+	}
+
+	Initialize();
+}
+///////////////////////////////////////////////////////////////
 // Frame Metadata Cache ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 function FrameMetadataCache()
@@ -14124,6 +14525,8 @@ function HTML5_MSE_Player($startingContainer, frameRendered, PlaybackReachedNatu
 	}
 	var onVideoError = function (e)
 	{
+		if (player.error.message.indexOf("DEMUXER_ERROR_COULD_NOT_OPEN: MediaSource endOfStream before demuxer initialization completes") === 0)
+			return; // Happens sometimes if the video stream ends very quickly. Some clips may do this if you seek to the very end while they are playing.
 		if (!inputRequiredOverlay.IsActive())
 			playerErrorHandler(player.error.message + ": " + GetMediaErrorMessage(player.error.code));
 	}
@@ -15415,10 +15818,20 @@ function GetCameraOverlayIcons(cameraId)
 		{
 			icons.push({ id: "generic_trigger", svg: "#svg_x5F_Alert1" });
 		}
+		if (settings.ui3_camera_overlay_icon_webcasting_disabled === "1"
+			&& !cam.webcast)
+		{
+			icons.push({ id: "webcasting_disabled", svg: "#svg_x5F_HoldProfile" });
+		}
 	}
 	return icons;
 }
 function AnyCameraOverlayIconsEnabled()
+{
+	return AnyCameraTriggerOverlayIconsEnabled()
+		|| settings.ui3_camera_overlay_icon_webcasting_disabled === "1";
+}
+function AnyCameraTriggerOverlayIconsEnabled()
 {
 	return settings.ui3_camera_overlay_icon_motion_trigger === "1"
 		|| settings.ui3_camera_overlay_icon_audio_trigger === "1"
@@ -16237,6 +16650,11 @@ function GroupCfg()
 		}
 		return null;
 	}
+	this.SetLockedResolution = function (camId, width, height)
+	{
+		self.Set(camId, "lockedResolution", width + "x" + height);
+		return null;
+	}
 }
 ///////////////////////////////////////////////////////////////
 // Customizable Streaming Profiles ////////////////////////////
@@ -16244,7 +16662,6 @@ function GroupCfg()
 function StreamingProfileUI()
 {
 	var self = this;
-	var initialized = false;
 	var dialog = null;
 	var $dlg = $();
 	var $content = $();
@@ -17289,6 +17706,173 @@ function GenericQualityHelper()
 	self.QualityChoiceChanged(settings.ui3_streamingQuality);
 }
 ///////////////////////////////////////////////////////////////
+// Group Layout Dialog ////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+var groupLayoutDialog = new GroupLayoutDialog();
+function GroupLayoutDialog()
+{
+	var self = this;
+	var dialog = null;
+	var $dlg = $();
+	var $content = $();
+	var $whLbl = $();
+	var $layoutWidth = $();
+	var $layoutHeight = $();
+	var img = null;
+
+	this.Show = function (imgLoaded)
+	{
+		CloseDialog();
+		img = imgLoaded;
+		if (!img)
+		{
+			toaster.Error('GroupLayoutDialog was not given a valid argument');
+			return;
+		}
+
+		// Create Dialog
+		$dlg = $('<div class="groupLayoutUiPanel dialogOptionPanel"></div>');
+		$content = $('<div class="groupLayoutUiPanelContent"></div>');
+		$dlg.append($content);
+
+		dialog = $dlg.dialog({
+			title: '"' + cameraListLoader.GetCameraName(img.id) + '" Group Settings'
+			, overlayOpacity: 0.3
+			, closeOnOverlayClick: true
+		});
+
+		// Load elements into dialog
+		if (cameraListLoader.isDynamicLayoutEligible(img.id))
+		{
+			var lockedResolution = groupCfg.GetLockedResolution(img.id);
+			var collapsible = new CollapsibleSection('grpLayout', "Camera Layout", dialog);
+			$content.append(collapsible.$heading);
+			$content.append(collapsible.$section);
+			collapsible.$section.append(UIFormField({
+				inputType: "checkbox"
+				, value: !lockedResolution
+				, label: "Fit to Viewport"
+				, tag: "dynamic",
+				onChange: function (tag, checked)
+				{
+					if (checked)
+					{
+						groupCfg.UnlockResolution(img);
+						videoPlayer.ReopenStreamAtCurrentSeekPosition();
+					}
+					else
+					{
+						groupCfg.LockResolution(img);
+						$layoutWidth.show();
+					}
+					ResetResolutionInputVisibility();
+				}
+			}));
+			$whLbl = $('<div class="dialogOption_label">Group Frame Size Target:'
+				+ '<div class="settingDesc">(will be rescaled by UI3)</div></div>');
+			$layoutWidth = UIFormField({
+				inputType: "number"
+				, minValue: imageRenderer.minGroupImageDimension
+				, maxValue: Math.max(7680, imageRenderer.maxGroupImageDimension)
+				, step: 16
+				, value: lockedResolution ? lockedResolution.w : 1920
+				, label: "Width"
+				, tag: "width",
+				onChange: function (e, tag, $input)
+				{
+					groupCfg.SetLockedResolution(img.id, $layoutWidth.find('input').val(), $layoutHeight.find('input').val());
+					videoPlayer.ReopenStreamAtCurrentSeekPosition();
+				}
+			});
+			$layoutHeight = UIFormField({
+				inputType: "number"
+				, minValue: imageRenderer.minGroupImageDimension
+				, maxValue: Math.max(7680, imageRenderer.maxGroupImageDimension)
+				, step: 16
+				, value: lockedResolution ? lockedResolution.h : 1080
+				, label: "Height"
+				, tag: "height",
+				onChange: function (e, tag, $input)
+				{
+					groupCfg.SetLockedResolution(img.id, $layoutWidth.find('input').val(), $layoutHeight.find('input').val());
+					videoPlayer.ReopenStreamAtCurrentSeekPosition();
+				}
+			});
+			collapsible.$section.append($whLbl);
+			collapsible.$section.append($layoutWidth);
+			collapsible.$section.append($layoutHeight);
+			ResetResolutionInputVisibility();
+		}
+		else
+		{
+			$whLbl = $();
+			$layoutWidth = $();
+			$layoutHeight = $();
+		}
+
+		if (img.isGroup)
+		{
+			var collapsible = new CollapsibleSection('grpDisp', "Display Options", dialog);
+			$content.append(collapsible.$heading);
+			$content.append(collapsible.$section);
+			collapsible.$section.append(ThreeStateFormField(img.id, "showCameraNames", "Show camera names"));
+			collapsible.$section.append(ThreeStateFormField(img.id, "showCameraBorders", "Show camera borders"));
+			collapsible.$section.append(ThreeStateFormField(img.id, "showHiddenCameras", "Show hidden cameras"));
+			collapsible.$section.append(ThreeStateFormField(img.id, "hideDisabledCameras", "Hide disabled cameras"));
+			collapsible.$section.append(ThreeStateFormField(img.id, "hideInactiveCamerasWithoutVideo", "Hide inactive cameras without video"));
+		}
+
+		if ($content.children().length === 0)
+			$content.append('<div style="padding: 10px;">"' + img.id + '" does not have any settings that are configurable in this panel.</div>');
+
+		dialog.contentChanged(true);
+	}
+	var ThreeStateFormField = function (camId, key, label)
+	{
+		var v = groupCfg.Get(camId, key);
+		if (!v || v < 0 || v > 2)
+			v = 0;
+
+		return UIFormField({
+			inputType: "threeState"
+			, value: v
+			, label: label
+			, tag: key,
+			onChange: function (e, value, $btn)
+			{
+				groupCfg.Set(camId, key, value);
+				videoPlayer.ReopenStreamAtCurrentSeekPosition();
+			}
+		})
+	}
+	var ResetResolutionInputVisibility = function ()
+	{
+		var lockedResolution = groupCfg.GetLockedResolution(img.id);
+		if (lockedResolution)
+		{
+			$layoutWidth.find('input').val(lockedResolution.w);
+			$layoutHeight.find('input').val(lockedResolution.h);
+			$whLbl.show();
+			$layoutWidth.show();
+			$layoutHeight.show();
+		}
+		else
+		{
+			$whLbl.hide();
+			$layoutWidth.hide();
+			$layoutHeight.hide();
+		}
+	}
+	var CloseDialog = function ()
+	{
+		if (dialog != null)
+		{
+			dialog.close();
+			dialog = null;
+		}
+	}
+}
+///////////////////////////////////////////////////////////////
 // Jpeg Quality Helper ////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 function JpegQualityHelper()
@@ -17332,27 +17916,9 @@ function CanvasContextMenu()
 	{
 		var imgLoaded = videoPlayer.Loaded().image;
 		if (imgLoaded.isGroup || cameraListLoader.isDynamicLayoutEligible(imgLoaded.id))
-			$("#submenu_trigger_groupLayout").closest('.b-m-item,.b-m-ifocus').show();
+			$("#submenu_trigger_groupSettings").closest('.b-m-item,.b-m-ifocus').show();
 		else
-			$("#submenu_trigger_groupLayout").closest('.b-m-item,.b-m-ifocus').hide();
-
-		ThreeStateMenuItem.SetVisible("showCameraNames", imgLoaded.isGroup);
-		ThreeStateMenuItem.SetVisible("showCameraBorders", imgLoaded.isGroup);
-		ThreeStateMenuItem.SetVisible("showHiddenCameras", imgLoaded.isGroup);
-		ThreeStateMenuItem.SetVisible("hideDisabledCameras", imgLoaded.isGroup);
-		ThreeStateMenuItem.SetVisible("hideInactiveCamerasWithoutVideo", imgLoaded.isGroup);
-
-		if (cameraListLoader.isDynamicLayoutEnabled(imgLoaded.id))
-		{
-			var lockedResolution = groupCfg.GetLockedResolution(imgLoaded.id);
-			if (lockedResolution)
-				$("#label_lockin_current_resolution").text("Unlock aspect ratio");
-			else
-				$("#label_lockin_current_resolution").text("Lock-in current aspect ratio");
-			$("#label_lockin_current_resolution").closest('.b-m-item,.b-m-ifocus').show();
-		}
-		else
-			$("#label_lockin_current_resolution").closest('.b-m-item,.b-m-ifocus').hide();
+			$("#submenu_trigger_groupSettings").closest('.b-m-item,.b-m-ifocus').hide();
 
 		var itemsToDisable = ["cameraname"];
 		if (lastLiveContextMenuSelectedCamera == null || !cameraListLoader.CameraIsAlone(lastLiveContextMenuSelectedCamera))
@@ -17411,15 +17977,6 @@ function CanvasContextMenu()
 			var isMaxAlready = (camData.optionValue == videoPlayer.Loaded().image.id && homeGroupObj == null);
 			$maximize.text(isMaxAlready ? "Back to Group" : "Maximize");
 			$maximize.parent().prev().find("use").attr("xlink:href", isMaxAlready ? "#svg_mio_FullscreenExit" : "#svg_mio_Fullscreen");
-		}
-		var imgLoaded = videoPlayer.Loaded().image;
-		if (imgLoaded.isGroup)
-		{
-			ThreeStateMenuItem.Refresh("showCameraNames", groupCfg.Get(imgLoaded.id, "showCameraNames"));
-			ThreeStateMenuItem.Refresh("showCameraBorders", groupCfg.Get(imgLoaded.id, "showCameraBorders"));
-			ThreeStateMenuItem.Refresh("showHiddenCameras", groupCfg.Get(imgLoaded.id, "showHiddenCameras"));
-			ThreeStateMenuItem.Refresh("hideDisabledCameras", groupCfg.Get(imgLoaded.id, "hideDisabledCameras"));
-			ThreeStateMenuItem.Refresh("hideInactiveCamerasWithoutVideo", groupCfg.Get(imgLoaded.id, "hideInactiveCamerasWithoutVideo"));
 		}
 
 		return true;
@@ -17498,22 +18055,9 @@ function CanvasContextMenu()
 			case "statsfornerds":
 				nerdStats.Open();
 				break;
-			case "lockin_current_resolution":
-				{
-					var imgLoaded = videoPlayer.Loaded().image;
-					if (cameraListLoader.isDynamicLayoutEnabled(imgLoaded.id))
-					{
-						var lockedResolution = groupCfg.GetLockedResolution(imgLoaded.id);
-						if (lockedResolution)
-						{
-							groupCfg.UnlockResolution(imgLoaded);
-							videoPlayer.ReopenStreamAtCurrentSeekPosition();
-						}
-						else
-							groupCfg.LockResolution(imgLoaded);
-					}
-					break;
-				}
+			case "group_settings_edit":
+				groupLayoutDialog.Show(videoPlayer.Loaded().image);
+				break;
 			default:
 				toaster.Error(this.data.alias + " is not implemented!");
 				break;
@@ -17530,18 +18074,7 @@ function CanvasContextMenu()
 				, { text: '<div id="cmroot_liveview_downloadbutton_findme" style="display:none"></div>Save image to disk', icon: "#svg_x5F_Snapshot", alias: "saveas", action: onLiveContextMenuAction }
 				, { text: "Copy image address", icon: "#svg_mio_copy", iconClass: "noflip", alias: "copyimageaddress", action: onLiveContextMenuAction }
 				, { type: "splitLine" }
-				, {
-					text: "<span id=\"submenu_trigger_groupLayout\">Group Layout</span>", icon: "#svg_mio_apps", iconClass: "noflip", alias: "submenu_groupLayout",
-					type: "group",
-					items: [
-						{ text: "<span id=\"label_lockin_current_resolution\">Lock-in current aspect ratio</span>", icon: "#svg_mio_lock", iconClass: "noflip", alias: "lockin_current_resolution", action: onLiveContextMenuAction },
-						ThreeStateMenuItem.Create("showCameraNames", "Show camera names", onLiveContextMenuAction),
-						ThreeStateMenuItem.Create("showCameraBorders", "Show camera borders", onLiveContextMenuAction),
-						ThreeStateMenuItem.Create("showHiddenCameras", "Show hidden cameras", onLiveContextMenuAction),
-						ThreeStateMenuItem.Create("hideDisabledCameras", "Hide disabled cameras", onLiveContextMenuAction),
-						ThreeStateMenuItem.Create("hideInactiveCamerasWithoutVideo", "Hide inactive cameras without video&nbsp;", onLiveContextMenuAction)
-					]
-				}
+				, { text: "<span id=\"submenu_trigger_groupSettings\">Group Settings</span>", icon: "#svg_mio_apps", iconClass: "noflip", alias: "group_settings_edit", action: onLiveContextMenuAction }
 				, { text: "<span id=\"contextMenuCameraName\">Camera Name</span>", icon: "", alias: "cameraname" }
 				, { type: "splitLine" }
 				, { text: "<span id=\"contextMenuMaximize\">Maximize</span>", icon: "#svg_mio_Fullscreen", iconClass: "noflip", alias: "maximize", action: onLiveContextMenuAction }
@@ -18528,6 +19061,8 @@ function CameraListDialog()
 			floatingBadges += '<div class="icon16" style="color:#FF0000;" title="alerting"><svg class="icon"><use xlink:href="#svg_x5F_Alert1"></use></svg></div>';
 		if (cam.isEnabled && (!cam.isOnline || cam.isNoSignal))
 			floatingBadges += '<div class="icon16" style="color:#FF0000;" title="offline / no signal"><svg class="icon"><use xlink:href="#svg_x5F_Warning"></use></svg></div>';
+		if (!cam.webcast)
+			floatingBadges += '<div class="icon16" style="color:#FF0000;" title="webcasting disabled"><svg class="icon"><use xlink:href="#svg_x5F_HoldProfile"></use></svg></div>';
 		if (cam.newalerts > 0)
 			floatingBadges += '<div class="newAlerts" title="' + htmlAttributeEncode(cam.newalerts) + ' new alert' + (cam.newAlerts === 1 ? '' : 's') + '" style="color:#FF0000;"><div class="icon16"><svg class="icon"><use xlink:href="#svg_x5F_Alert1"></use></svg></div>' + htmlEncode(cam.newalerts) + '</div>';
 		if (!cam.isEnabled)
@@ -18538,7 +19073,7 @@ function CameraListDialog()
 		return '<div class="camlist_thumbbox" onclick="cameraListDialog.camListThumbClick(\'' + cam.optionValue + '\')" style="background-color: #' + colorHex + ';">'
 			+ '<div class="camlist_thumb">'
 			+ '<div class="camlist_thumb_aligner"></div>'
-			+ '<div class="camlist_thumb_helper"><img src="" alt="" class="camlist_thumb_img" camid="' + cam.optionValue + '" isEnabled="' + (cam.isEnabled ? '1' : '0') + '" aspectratio="' + (cam.width / cam.height) + '" />'
+			+ '<div class="camlist_thumb_helper"><img src="" alt="" class="camlist_thumb_img" camid="' + cam.optionValue + '" isEnabled="' + (cam.isEnabled && cam.webcast ? '1' : '0') + '" aspectratio="' + (cam.width / cam.height) + '" />'
 			+ '<span style="display:none;">No Image</span></div></div>'
 			+ '<div class="camlist_label" style="background-color: #' + colorHex + '; color: #' + nameColorHex + ';">' + floatingBadges + htmlEncode(labelText) + '</div>'
 			+ '</div>';
@@ -18826,6 +19361,8 @@ function CameraProperties(camId)
 			$infoSection.append(GetInfo("ID", cam.optionValue));
 			$infoSection.append(GetInfo("Name", CleanUpGroupName(cam.optionDisplay)));
 			$infoSection.append(GetInfo("Status", cam.isEnabled ? ("Enabled, " + (cam.isOnline ? "Online" : "Offline")) : "Disabled"));
+			if (!cam.webcast)
+				$infoSection.append(GetInfo("Webcasting", "Disabled"));
 			$infoSection.append(GetInfo("Video", cam.width + "x" + cam.height + " @ " + cam.FPS + " FPS"));
 			$infoSection.append(GetInfo("Audio", cam.audio ? "Yes" : "No"));
 			$infoSection.append('<div class="dialogOption_item dialogOption_item_info"><a title="Opens a live H.264 stream in an efficient, cross-platform player. This method delays the stream by several seconds." href="javascript:hlsPlayer.OpenDialog(\'' + JavaScriptStringEncode(camId) + '\')">'
@@ -23933,7 +24470,7 @@ function FetchVideoH264Streamer(url, frameCallback, statusBlockCallback, streamI
 
 							bitRateCalc_Video.AddDataPoint(currentVideoFrame.size);
 
-							CallFrameCallback(new VideoFrame(buf, currentVideoFrame), availableStreams);
+							CallFrameCallback(new BIVideoFrame(buf, currentVideoFrame), availableStreams);
 
 							state = 2;
 						}
@@ -23945,7 +24482,7 @@ function FetchVideoH264Streamer(url, frameCallback, statusBlockCallback, streamI
 
 							bitRateCalc_Audio.AddDataPoint(currentAudioFrame.size);
 
-							CallFrameCallback(new AudioFrame(buf, audioHeader), availableStreams);
+							CallFrameCallback(new BIAudioFrame(buf, audioHeader), availableStreams);
 
 							state = 2;
 						}
@@ -24030,7 +24567,7 @@ function BITMAPINFOHEADER(buf)
 	this.biHeight = ReadInt32LE(buf, offsetWrapper); // Height in pixels
 	this.biPlanes = ReadUInt16LE(buf, offsetWrapper); // Number of planes (always 1)
 	this.biBitCount = ReadUInt16LE(buf, offsetWrapper); // Bits Per Pixel
-	this.biCompression = ReadUInt32LE(buf, offsetWrapper); // ['J','P','E','G'] or ['M','J','P','G'] (this can be ignored)
+	this.biCompression = ReadASCII(buf, offsetWrapper, 4); // "JPEG" or "MJPG" or "H264" (this can be ignored)
 	this.biSizeImage = ReadUInt32LE(buf, offsetWrapper); // Image size in bytes
 	this.biXPelsPerMeter = ReadInt32LE(buf, offsetWrapper);
 	this.biYPelsPerMeter = ReadInt32LE(buf, offsetWrapper);
@@ -24061,7 +24598,7 @@ function WAVEFORMATEX(buf)
 	else
 		this.valid = false;
 }
-function VideoFrame(buf, metadata)
+function BIVideoFrame(buf, metadata)
 {
 	var self = this;
 	this.meta = $.extend({}, metadata);
@@ -24102,7 +24639,7 @@ function VideoFrame(buf, metadata)
 		return false;
 	}
 }
-function AudioFrame(buf, formatHeader)
+function BIAudioFrame(buf, formatHeader)
 {
 	var self = this;
 	this.isAudio = true;
@@ -24236,12 +24773,21 @@ function ReadUInt64LE(buf, offsetWrapper)
 	var mostSignificant = (ReadUInt32LE(buf, offsetWrapper) & 0x001FFFFF) * 4294967296;
 	return mostSignificant + leastSignificant;
 }
-//function ReadUTF8(buf, offsetWrapper, byteLength)
-//{
-//	var v = Utf8ArrayToStr(new Uint8Array(buf, offsetWrapper.offset, byteLength));
-//	offsetWrapper.offset += byteLength;
-//	return v;
-//}
+function ReadASCII(buf, offsetWrapper, byteLength)
+{
+	var v = ASCIIArrayToStr(new Uint8Array(buf.buffer, offsetWrapper.offset, byteLength));
+	offsetWrapper.offset += byteLength;
+	return v;
+}
+function ASCIIArrayToStr(arr)
+{
+	var str = [];
+	for (var i = 0; i < arr.length; i++)
+	{
+		str.push(String.fromCharCode(arr[i]));
+	}
+	return str.join('');
+}
 function ReadSubArray(buf, offsetWrapper, byteLength)
 {
 	var readBuf = new Uint8Array(byteLength);
@@ -24427,13 +24973,11 @@ function StatsRow(name)
 		{
 			CreateGraph();
 			graph.AddValue(value, true);
-			$htmlValue.html(htmlValue);
 		}
 		else
-		{
 			DestroyGraph();
+		if ($htmlValue.html() !== htmlValue)
 			$htmlValue.html(htmlValue);
-		}
 	}
 	this.GetValue = function ()
 	{
@@ -25407,6 +25951,10 @@ function UISettingsPanel()
 		}
 		if (category === "Extra")
 		{
+			if (processFilter({ label: "Export All Settings" }))
+				rowIdx = Add_ExportAllSettingsButton(cat, rowIdx);
+			if (processFilter({ label: "Import All Settings" }))
+				rowIdx = Add_ImportAllSettingsButton(cat, rowIdx);
 			if (sessionManager.IsAdministratorSession())
 			{
 				if (processFilter({ label: "Create Script: \"ui3-local-overrides.js\" (learn more) Download" }))
@@ -25443,6 +25991,57 @@ function UISettingsPanel()
 		cat.$section.append($row);
 		return rowIdx;
 	}
+	var Add_ExportAllSettingsButton = function (cat, rowIdx)
+	{
+		var date = GetPaddedDateStr(new Date(), false);
+
+		var $row = $('<div id="exportAllSettingsBtn" class="uiSettingsRow dialogOption_item dialogOption_item_info"></div>');
+		var $input = $('<a class="input" href="javascript:void(0)" download="ui3-settings-export-' + date + '.json">Export</a>');
+		$input.on('click', function ()
+		{
+			var text = self.ExportAllSettingsToJson();
+			if (text)
+			{
+				clipboardHelper.CopyText(text);
+				toaster.Success("Copied all settings to clipboard. Please import into a different UI3 instance.");
+			}
+			else
+			{
+				toaster.Error("Failed to export settings");
+				return false;
+			}
+
+			$input.attr('download', 'ui3-settings-export-' + date + '.json');
+			$input.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			setTimeout(function () { $input.attr('href', 'javascript:void(0)'); }, 0);
+			return true;
+		});
+		$row.append($input);
+		$row.append(GetDialogOptionLabel('Export All Settings'));
+		if (rowIdx++ % 2 == 1)
+			$row.addClass('everyOther');
+		cat.$section.append($row);
+		return rowIdx;
+	}
+	var Add_ImportAllSettingsButton = function (cat, rowIdx)
+	{
+		var $row = $('<div id="importAllSettingsBtn" class="uiSettingsRow dialogOption_item dialogOption_item_info"></div>');
+		var $input = $('<a class="input" href="javascript:void(0)">Import</a>');
+		$input.on('click', function ()
+		{
+			SimpleDialog.InputText("Import All Settings", "Paste settings that were previously exported.<br>If import is successful, UI3 will be reloaded.", function (inputText)
+			{
+				if (self.ImportSettingsJson(inputText))
+					ReloadInterface();
+			});
+		});
+		$row.append($input);
+		$row.append(GetDialogOptionLabel('Import All Settings'));
+		if (rowIdx++ % 2 == 1)
+			$row.addClass('everyOther');
+		cat.$section.append($row);
+		return rowIdx;
+	}
 	var BuildLocalOverridesTemplate = function ($input)
 	{
 		try
@@ -25465,6 +26064,49 @@ function UISettingsPanel()
 			BuildLocalOverridesTemplate_Category(sb, null);
 			BuildLocalOverridesTemplate_Category(sb, "Streaming Profiles"); // This category isn't shown in UI Settings
 			return sb.ToString();
+		}
+		catch (ex)
+		{
+			toaster.Error(ex);
+			return false;
+		}
+	}
+	this.ExportAllSettingsToJson = function ()
+	{
+		try
+		{
+			if (isLocalStorageEnabled())
+				return JSON.stringify(localStorage);
+			else
+			{
+				toaster.Error("Local Storage is not enabled in this browser, so you have no persistent settings.");
+				return false;
+			}
+		}
+		catch (ex)
+		{
+			toaster.Error(ex);
+			return false;
+		}
+	}
+	this.ImportSettingsJson = function (s)
+	{
+		try
+		{
+			if (isLocalStorageEnabled())
+			{
+				if (typeof s === "string")
+					s = JSON.parse(s);
+				for (var key in s)
+					if (s.hasOwnProperty(key))
+						localStorage.setItem(key, s[key]);
+				return true;
+			}
+			else
+			{
+				toaster.Error("Local Storage is not enabled in this browser, so you have no persistent settings.");
+				return false;
+			}
 		}
 		catch (ex)
 		{
@@ -26064,6 +26706,45 @@ function UIFormField(args)
 			$input.on('change', function (e) { return o.onChange(e, o.tag, $input); });
 		return $('<div class="dialogOption_item dialogOption_item_info' + disabledClass + compactClass + '"></div>').append($input).append(GetDialogOptionLabel(o.label));
 	}
+	else if (o.inputType === "button" || o.inputType === "threeState")
+	{
+		var $input = $('<input type="button" />');
+
+		if (o.disabled)
+			$input.attr("disabled", "disabled");
+
+		if (o.inputType === "threeState")
+		{
+			$input.attr("threeState", o.value);
+			$input.val(ThreeStateOptions[o.value]);
+			$input.addClass(ThreeStateButtonClasses[o.value]);
+			$input.on('click', function (e)
+			{
+				if ($input.attr("disabled") !== "disabled")
+				{
+					var v = parseInt($input.attr("threeState"));
+					$input.removeClass(ThreeStateButtonClasses[v]);
+					v = (v + 1) % ThreeStateOptions.length;
+					$input.attr("threeState", v);
+					$input.val(ThreeStateOptions[v]);
+					$input.addClass(ThreeStateButtonClasses[v]);
+					return o.onChange(o.tag, v, $input);
+				}
+			});
+		}
+		else
+		{
+			$input.val(o.value);
+			$input.on('click', function (e) { if ($input.attr("disabled") !== "disabled") { return o.onChange(o.tag, $input); } });
+		}
+
+		var $label = $('<label class="dialogOption_label"> ' + o.label + '</label>');
+
+		var $row = $('<div class="dialogOption_item dialogOption_item_btn' + disabledClass + '"></div>');
+		$row.append($label);
+		$row.append($input);
+		return $row;
+	}
 	else if (o.inputType === "errorCommentText")
 	{
 		return $('<div class="dialogOption_item dialogOption_item_info dialogOption_item_comment settingsCommentError"></div>').text(o.label);
@@ -26094,6 +26775,8 @@ function UIFormField(args)
 		return $('<div class="dialogOption_item dialogOption_item_info">Invalid arguments sent to UIFormField.</div>');
 	}
 }
+var ThreeStateOptions = ["No preference", "Force OFF", "Force ON"];
+var ThreeStateButtonClasses = ["triBtn0", "triBtn1", "triBtn2"];
 function MakeAddEditorFieldFn(title, $content, obj, o)
 {
 	o = $.extend({
@@ -26375,6 +27058,8 @@ function UIHelpTool()
 	{
 		$('<div class="UIHelp">'
 			+ 'UI3 has several H.264 player options. Not all options are available in all browsers.'
+			+ '<br><br><b>WebCodecs</b> - ' + (webcodecs_h264_player_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
+			+ '&nbsp; &nbsp; The WebCodecs player directly accesses the browser\'s built-in video codecs to efficiently decode video with the lowest possible latency.  This is the best option if it is available.'
 			+ '<br><br><b>JavaScript</b> - ' + (h264_js_player_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
 			+ '&nbsp; &nbsp; The JavaScript player is the most robust and compatible player option, but also the slowest.'
 			+ '<br><br><b>HTML5</b> - ' + (mse_mp4_h264_supported ? '<span style="color:#66FF66;">Available</span>' : '<span style="color:#FF3333;">Not Available</span>') + '<br><br>'
@@ -27507,7 +28192,7 @@ var UrlParameters =
 {
 	loaded: false,
 	parsed_url_params: {},
-	Get: function (key)
+	Get: function ()
 	{
 		if (!this.loaded)
 		{
@@ -27518,8 +28203,11 @@ var UrlParameters =
 			})
 			this.loaded = true;
 		}
-		if (typeof this.parsed_url_params[key.toLowerCase()] != 'undefined')
-			return this.parsed_url_params[key.toLowerCase()];
+		for (var i = 0; i < arguments.length; i++)
+		{
+			if (typeof this.parsed_url_params[arguments[i].toLowerCase()] != 'undefined')
+				return this.parsed_url_params[arguments[i].toLowerCase()];
+		}
 		return "";
 	}
 };
@@ -27979,6 +28667,33 @@ function debounce(fn, delay)
 	{
 		clearTimeout(timeout);
 		timeout = setTimeout(fn, delay);
+	};
+}
+function throttle(fn, delay)
+{
+	var interval;
+	var queued;
+	return function ()
+	{
+		if (!interval)
+		{
+			fn.apply(this, arguments);
+			interval = setInterval(function ()
+			{
+				if (queued)
+				{
+					fn.apply(this, queued.args);
+					queued = null;
+				}
+				else
+				{
+					clearInterval(interval);
+					interval = null;
+				}
+			}, delay);
+		}
+		else
+			queued = { args: arguments };
 	};
 }
 function getRandomInt(maxPlusOne)
