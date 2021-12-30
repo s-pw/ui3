@@ -308,6 +308,40 @@ body, #layouttop, #layoutleft, #layoutbody, #layoutbottom, .unselectable
 	left: 0px;
 }
 
+#sidebarPortraitDragbar
+{
+	display: none;
+}
+
+.portrait #sidebarPortraitDragbar
+{
+	display: block;
+	position: absolute;
+	top: -15px; /* Coupled: #sidebarPortraitDragbar top and height, #layoutleft margin-top, #statusArea bottom */
+	left: 0px;
+	width: 100vw;
+	height: 15px;
+	cursor: ns-resize;
+	background: rgb(255,255,255,0.1);
+	background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+}
+
+	.portrait #sidebarPortraitDragbar:hover
+	{
+		background: rgb(255,255,255,0.25);
+		background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 100%);
+	}
+
+.portrait #layoutleft
+{
+	margin-top: 15px; /* Coupled: #sidebarPortraitDragbar top and height, #layoutleft margin-top, #statusArea bottom */
+}
+
+.portrait .leftBarTopPadding
+{
+	display: none;
+}
+
 /* Top Bar / Tabs */
 #topbar_vertical_align_helper
 {
@@ -335,6 +369,11 @@ body, #layouttop, #layoutleft, #layoutbody, #layoutbottom, .unselectable
 .sizeSmall #layoutleft, .sizeSmall #systemnamewrapper, .sizeSmall .topbar_tab, .sizeSmall .clipExportPanel
 {
 	width: 146px;
+}
+
+.portrait #layoutleft
+{
+	width: 100vw;
 }
 
 .sizeMedium #systemnamewrapper, .sizeMedium .topbar_tab
@@ -632,6 +671,11 @@ div.icon, a.icon
 .sizeSmall #layoutLeftRecordingsControls .leftBarBox
 {
 	padding-bottom: 2px;
+}
+
+.portrait #layoutLeftRecordingsControls
+{
+	width: 50vw;
 }
 
 .leftBarInnerBox
@@ -955,22 +999,33 @@ div.invisibleLabel
 {
 	height: 50px;
 }
-
 /* PTZ Buttons */
-.leftBarTopPadding
+#layoutleftLiveContent
 {
-	width: 0px;
-	height: 22px;
+	margin-top: 22px;
 }
 
-.sizeMedium .leftBarTopPadding
+.sizeMedium #layoutleftLiveContent
 {
-	height: 14px;
+	margin-top: 14px;
 }
 
-.sizeSmall .leftBarTopPadding
+.sizeSmall #layoutleftLiveContent
 {
-	height: 7px;
+	margin-top: 7px;
+}
+
+.portrait #layoutleftLiveContent
+{
+	column-count: 2;
+	width: 100vw;
+	margin-top: 7px;
+}
+
+.portrait.sizeMedium #layoutleftLiveContent,
+.portrait.sizeSmall #layoutleftLiveContent
+{
+	margin-top: 0px;
 }
 
 #layoutLeftRecordingsControls .leftBarTopPadding
@@ -1265,7 +1320,7 @@ div.invisibleLabel
 {
 	padding-bottom: 0px;
 	position: absolute;
-	bottom: 0px;
+	bottom: 15px; /* Coupled: #sidebarPortraitDragbar top and height, #layoutleft margin-top, #statusArea bottom */
 	background-color: var(--panel-bg-color);
 	z-index: 50;
 	overflow: visible;
@@ -1425,6 +1480,54 @@ div.invisibleLabel
 	font-size: 0px;
 	line-height: 0px;
 	height: 3px;
+}
+
+@media (min-width: 320px)
+{
+	.sizeSmall.portrait .statusBarsMain
+	{
+		column-count: 2;
+	}
+}
+
+@media (min-width: 400px)
+{
+	.sizeMedium.portrait .statusBarsMain
+	{
+		column-count: 2;
+	}
+}
+
+@media (min-width: 480px)
+{
+	.portrait .statusBarsMain
+	{
+		column-count: 2;
+	}
+}
+
+@media (min-width: 600px)
+{
+	.sizeSmall.portrait .statusBarsMain
+	{
+		column-count: 4;
+	}
+}
+
+@media (min-width: 740px)
+{
+	.sizeMedium.portrait .statusBarsMain
+	{
+		column-count: 4;
+	}
+}
+
+@media (min-width: 900px)
+{
+	.portrait .statusBarsMain
+	{
+		column-count: 4;
+	}
 }
 
 .clickableStatusBar
@@ -2212,6 +2315,13 @@ div.invisibleLabel
 	width: 100%;
 }
 
+.portrait #clipsbodyWrapper
+{
+	position: absolute !important;
+	left: 50%;
+	width: 50%;
+}
+
 .clipListTopDateWrapper
 {
 	background-color: var(--datetile-bg-color);
@@ -2226,6 +2336,14 @@ div.invisibleLabel
 	{
 		color: #00FF00;
 	}
+
+.portrait #clipListTopDate
+{
+	position: absolute !important;
+	top: 0px;
+	left: 50%;
+	width: 50%;
+}
 
 .clipIconWrapper
 {
@@ -2611,21 +2729,21 @@ div.invisibleLabel
 	vertical-align: auto;
 	width: 187px;
 	height: 4px;
-	margin: 2px 1px 2px 16px;
+	margin: 2px auto 2px auto;
 }
 
 .sizeMedium #clipsbody.largerThumbs .clipcolorbar
 {
 	width: 179px;
 	height: 3px;
-	margin: 2px 1px 2px 2px;
+	margin: 2px auto 2px auto;
 }
 
 .sizeSmall #clipsbody.largerThumbs .clipcolorbar
 {
 	width: 133px;
 	height: 3px;
-	margin: 2px 1px 2px 1px;
+	margin: 2px auto 2px auto;
 }
 
 .clipdesc
@@ -2651,6 +2769,11 @@ div.invisibleLabel
 {
 	margin-left: 2px;
 	width: 80px;
+}
+
+.portrait .clipdesc
+{
+	width: auto;
 }
 
 #clipsbody.largerThumbs .clipdesc
@@ -5330,6 +5453,12 @@ ul.extraSpacing li
 #dailyLimitClock
 {
 	color: #FF8800;
+}
+.currentH264PlayerComment
+{
+	text-align: center;
+	font-weight: bold;
+	color: #00d900;
 }
 /* Audio Visualizer */
 #ui3AudioVisualizerPanel
