@@ -27,37 +27,47 @@ function loadTimeline(camera) {
 	}]
 	clipLoader.LoadClips();
 	ExecJSON({cmd: "alertlist", camera: camera, view: "confirmed"}, response => {
-		timelineData[0].data = response.data.map(d => {
-			return {
-				date: new Date(d.date * 1000),
-				memo: d.memo,
-				path: d.path,
-				clip: d
+			if(response.data) {
+				timelineData[0].data = response.data.map(d => {
+					return {
+						date: new Date(d.date * 1000),
+						memo: d.memo,
+						path: d.path,
+						clip: d
+					}
+				})
+			} else {
+				timelineData[0].data = []
 			}
-		});
 		ExecJSON({cmd: "cliplist", camera: camera, view: "stored"}, response => {
-			timelineData[1].data = response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
-				return {
-					date: new Date(d.date * 1000),
-					memo: d.file,
-					msec: d.msec,
-					path: d.path,
-					type: 'stored',
-					clip: d
-				}
-			})
-			ExecJSON({cmd: "cliplist", camera: camera, view: "new"}, response => {
-				Array.prototype.push.apply(timelineData[1].data, response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
-					timelineCurrentCam = d.camera
+			if(response.data) {
+				timelineData[1].data = response.data.filter(d=>d.path.endsWith("bvr")).map(d => {
 					return {
 						date: new Date(d.date * 1000),
 						memo: d.file,
 						msec: d.msec,
 						path: d.path,
-						type: 'new',
+						type: 'stored',
 						clip: d
 					}
-				}))
+				})
+			} else {
+				timelineData[1].data = []
+			}
+			ExecJSON({cmd: "cliplist", camera: camera, view: "new"}, response => {
+				if(response.data) {
+					Array.prototype.push.apply(timelineData[1].data, response.data.filter(d => d.path.endsWith("bvr")).map(d => {
+						timelineCurrentCam = d.camera
+						return {
+							date: new Date(d.date * 1000),
+							memo: d.file,
+							msec: d.msec,
+							path: d.path,
+							type: 'new',
+							clip: d
+						}
+					}))
+				}
 
 				const tooltip = d3
 					.select('body')
@@ -93,8 +103,12 @@ function loadTimeline(camera) {
 							},
 							onClick: (ev,data) => {
 								chart.marker.updateMarker(data.date);
-								seekBar.timelineDragEnd(data.clip, null)
-								timelineCurrentCam = data.clip.camera
+								ExecJSON({cmd: "clipstats", path: data.clip.path}, response => {
+									if (response.data) {
+										seekBar.timelineDragEnd(response.data, response.data.offset / response.data.msec)
+										timelineCurrentCam = data.clip.camera
+									}
+								});
 							},
 						},
 						marker: {
@@ -113,23 +127,28 @@ function loadTimeline(camera) {
 										.filter(d => d.clip.camera === timelineCurrentCam)
 										.filter(d => date > d.date && date < new Date(d.date.getTime()+d.msec))
 									if (clip.length > 0) {
-										let pos = (date.getTime() - clip[0].date.getTime()) / clip[0].msec
-										seekBar.timelineDragEnd(clip[0].clip, pos)
+										ExecJSON({cmd: "clipstats", path: clip[0].path}, response => {
+											if (response.data) {
+												clip[0].clip.msec = response.data.msec
+
+												let pos = (date.getTime() - clip[0].date.getTime()) / clip[0].clip.msec
+												seekBar.timelineDragEnd(clip[0].clip, pos)
+
+											}
+										});
 									}
 								}
 							}
 						}
 					});
 				}
+
 				d3
 					.select('#timeline')
 					.data([timelineData])
 					.call(chart);
 			});
 		});
-
-
-
 	});
 }
 ///////////////////////////////////////////////////////////////
@@ -2939,7 +2958,7 @@ $(function ()
 			$("#layoutleftLive").show();
 			$("#layoutleftRecordings").hide();
 			//$("#layoutbottom").hide();
-			$("#timeline").hide();
+			$("#timeline").css('visibility', 'hidden');
 		}
 		else
 		{
@@ -2949,10 +2968,10 @@ $(function ()
 			$("#recordingsFilterByHeading").text("Filter by:");
 			if (currentPrimaryTab === "timeline") {
 				playbackControls.Show();
-				$("#timeline").show();
+				$("#timeline").css('visibility', 'visible');
 				loadTimeline(null);
 			} else {
-				$("#timeline").hide();
+				$("#timeline").css('visibility', 'hidden');
 				$("#seekBarWrapper").show();
 			}
 		}
@@ -5756,6 +5775,7 @@ function PlaybackControls()
 	this.hideTimeMs_Recordings = 3000;
 	var $layoutbody = $("#layoutbody");
 	var $pc = $("#playbackControls");
+	var $timeline = $("#timeline");
 	var $playbackSettings = $();
 	var buttonContainer = $("#pcButtonContainer");
 	var $progressText = $("#playbackProgressText");
@@ -5818,7 +5838,7 @@ function PlaybackControls()
 		{
 			SetQualityHint();
 			$pc.stop(true, true);
-			$pc.show();
+			$pc.css('visibility', 'visible');
 			isVisible = true;
 			self.resized();
 		}
@@ -5847,7 +5867,11 @@ function PlaybackControls()
 		{
 			CloseSettings();
 			$pc.stop(true, true);
-			$pc.hide();
+			$pc.css('visibility', 'hidden');
+			$timeline.css('visibility', 'hidden');
+			if (currentPrimaryTab === "timeline") {
+				$timeline.css('visibility', 'visible');
+			}
 			isVisible = false;
 			self.resized();
 			seekBar.onHide();
@@ -5860,7 +5884,10 @@ function PlaybackControls()
 		{
 			SetQualityHint();
 			$pc.stop(true, true);
-			$pc.fadeIn(100);
+			$pc.css('visibility', 'visible');
+			if (currentPrimaryTab === "timeline") {
+				$timeline.css('visibility', 'visible');
+			}
 			isVisible = true;
 			self.resized();
 		}
@@ -5877,7 +5904,8 @@ function PlaybackControls()
 			if (self.IsSeekbarDragging() || exportControls.IsEnabled() || settings.ui3_extra_playback_controls_alwaysVisible === "1")
 				return;
 			$pc.stop(true, true);
-			$pc.fadeOut(100);
+			$pc.css('visibility', 'hidden');
+			$timeline.css('visibility', 'hidden');
 			isVisible = false;
 			self.resized();
 			seekBar.onHide();
